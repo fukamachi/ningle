@@ -23,7 +23,11 @@
                :cl-syntax-annot)
   :components ((:module "src"
                 :components
-                ((:file "ningle"))))
+                ((:file "ningle" :depends-on ("app" "route"))
+                 (:file "app" :depends-on ("middleware/context"))
+                 (:file "route" :depends-on ("app"))
+                 (:file "context")
+                 (:file "middleware/context" :depends-on ("context")))))
   :description "Super micro framework for Common Lisp."
   :long-description
   #.(with-open-file (stream (merge-pathnames
