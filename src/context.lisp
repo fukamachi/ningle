@@ -16,11 +16,6 @@
 (cl-syntax:use-syntax :annot)
 
 @export
-(defvar *project* nil
-  "Special variable to store current Ningle application.
-Don't set to this variable directly. This is designed to be bound in lexical let.")
-
-@export
 (defvar *context* nil
   "Special variable to store Ningle Context, a hash table.
 Don't set to this variable directly. This is designed to be bound in lexical let.")

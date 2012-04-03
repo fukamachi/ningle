@@ -23,9 +23,8 @@
                :cl-syntax-annot)
   :components ((:module "src"
                 :components
-                ((:file "ningle" :depends-on ("app" "route"))
+                ((:file "ningle" :depends-on ("app"))
                  (:file "app" :depends-on ("middleware/context"))
-                 (:file "route" :depends-on ("app"))
                  (:file "context")
                  (:file "middleware/context" :depends-on ("context")))))
   :description "Super micro framework for Common Lisp."

@@ -10,7 +10,9 @@
         :clack.request
         :ningle.middleware.context)
   (:import-from :clack.util.route
-                :match)
+                :<url-rule>
+                :match
+                :make-url-rule)
   (:import-from :ningle.context
                 :*request*
                 :*response*))
@@ -19,25 +21,25 @@
 (cl-syntax:use-syntax :annot)
 
 @export
-(defclass <ningle-app> (<component>)
+(defclass <app> (<component>)
      ((routing-rules :initarg routing-rules :initform nil
                      :accessor routing-rules))
   (:documentation "Base class for Ningle Application. All Ningle Application must inherit this class."))
 
-(defmethod call :around ((this <ningle-app>) env)
+(defmethod call :around ((this <app>) env)
   (call (wrap
          (make-instance '<ningle-middleware-context>)
          (lambda (env)
            (call-next-method this env)))
         env))
 
-(defmethod call ((this <ningle-app>) env)
+(defmethod call ((this <app>) env)
   "Overriding method. This method will be called for each request."
   @ignore env
   (let* ((req *request*)
          (path-info (path-info req))
          (method (request-method req)))
-    (loop for (nil rule fn) in (reverse (routing-rules this))
+    (loop for (rule controller) in (reverse (routing-rules this))
           do (multiple-value-bind (matchp params)
                  (match rule method path-info)
                (when matchp
@@ -45,35 +47,44 @@
                        (append
                         params
                         (slot-value req 'clack.request::query-parameters)))
-                 (let ((res (call fn (parameter req))))
-                   (unless (eq res (next-route))
-                     (return res)))))
+
+                 (if (functionp controller)
+                     (let ((res (call controller (parameter req))))
+                       (unless (eq res (next-route))
+                         (return res)))
+                     (return controller))))
           finally
           (progn (setf (clack.response:status *response*) 404)
                  nil))))
 
+(defmethod match-url-rule-p ((rule <url-rule>) url-rule method)
+  (and (eq (clack.util.route::request-method rule) method)
+       (string= (clack.util.route::url rule) url-rule)))
+
 @export
-(defmethod add-route ((this <ningle-app>) routing-rule)
-  "Add a routing rule to the Application."
+(defmethod route ((this <app>) url-rule &key (method :get))
+  (second
+   (find-if #'(lambda (rule) (match-url-rule-p rule url-rule method))
+            (routing-rules this)
+            :key #'car)))
+
+@export
+(defmethod (setf route) (controller (this <app>) url-rule &key (method :get))
   (setf (routing-rules this)
-        (delete (car routing-rule)
-                (routing-rules this)
-                :key #'car))
-  (push routing-rule
-        (routing-rules this)))
+        (delete-if #'(lambda (rule) (match-url-rule-p rule url-rule method))
+                   (routing-rules this) :key #'car))
+
+  (push (list (make-url-rule url-rule :method method)
+              controller)
+        (routing-rules this))
+
+  controller)
 
 (defparameter +next-route+ '#:next-route)
 
 @export
 (defun next-route ()
   +next-route+)
-
-@export
-(defmethod lookup-route ((this <ningle-app>) symbol)
-  "Lookup a routing rule with SYMBOL from the application."
-  (loop for rule in (reverse (routing-rules this))
-        if (eq (first rule) symbol) do
-          (return rule)))
 
 (doc:start)
 
@@ -82,13 +93,13 @@ Ningle.App - Ningle Application Class.
 "
 
 @doc:SYNOPSIS "
-    (defclass <myapp-app> (<ningle-app>) ())
+    (defclass <myapp-app> (<app>) ())
     (defvar *app* (make-instance '<myapp-app>))
     (call *app*)
 "
 
 @doc:DESCRIPTION "
-Ningle.App provides a base class `<ningle-app>' for Ningle Applications.
+Ningle.App provides a base class `<app>' for Ningle Applications.
 "
 
 @doc:AUTHOR "

@@ -6,11 +6,9 @@
 (in-package :cl-user)
 (defpackage ningle
   (:use :cl)
-  (:import-from :ningle.route
-                :url
-                :url-for)
   (:import-from :ningle.app
-                :<ningle-app>
+                :<app>
+                :route
                 :next-route)
   (:import-from :ningle.context
                 :*context*
@@ -19,9 +17,8 @@
                 :*session*
                 :context
                 :with-context-variables)
-  (:export :url
-           :url-for
-           :<ningle-app>
+  (:export :<app>
+           :route
            :next-route
            :*context*
            :*request*
