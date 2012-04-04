@@ -4,19 +4,21 @@
 
 ## Usage
 
-    (defvar *app* (make-instance 'ningle:<app>))
-    
-    (setf (ningle:route *app* "/")
-          "Welcome to ningle!")
-    
-    (setf (ningle:route *app* "/login" :method :POST)
-          #'(lambda (params)
-              (if (authorize (getf params :|username|)
-                             (getf params :|password|))
-                "Authorized!"
-                "Failed...Try again.")))
-    
-    (clack:clackup *app*)
+```common-lisp
+(defvar *app* (make-instance 'ningle:<app>))
+
+(setf (ningle:route *app* "/")
+      "Welcome to ningle!")
+
+(setf (ningle:route *app* "/login" :method :POST)
+      #'(lambda (params)
+          (if (authorize (getf params :|username|)
+                         (getf params :|password|))
+            "Authorized!"
+            "Failed...Try again.")))
+
+(clack:clackup *app*)
+```
 
 Now you can access to http://localhost:5000/ and then ningle should show you "Welcome to ningle!".
 
@@ -32,42 +34,48 @@ As this is a thin framework, you need to have subtle knowledge about [Clack](htt
 
 ningle has the [Sinatra](http://www.sinatrarb.com/)-like routing system.
 
-    ;; GET request (default)
-    (setf (ningle:route *app* "/" :method :GET) ...)
-    
-    ;; POST request
-    (setf (ningle:route *app* "/" :method :POST) ...)
-    
-    ;; PUT request
-    (setf (ningle:route *app* "/" :method :PUT) ...)
-    
-    ;; DELETE request
-    (setf (ningle:route *app* "/" :method :DELETE) ...)
-    
-    ;; OPTIONS request
-    (setf (ningle:route *app* "/" :method :OPTIONS) ...)
+```common-lisp
+;; GET request (default)
+(setf (ningle:route *app* "/" :method :GET) ...)
+
+;; POST request
+(setf (ningle:route *app* "/" :method :POST) ...)
+
+;; PUT request
+(setf (ningle:route *app* "/" :method :PUT) ...)
+
+;; DELETE request
+(setf (ningle:route *app* "/" :method :DELETE) ...)
+
+;; OPTIONS request
+(setf (ningle:route *app* "/" :method :OPTIONS) ...)
+```
 
 Route pattern may contain "keyword" to put the value into the argument.
 
-    @url GET "/hello/:name"
-    (defun hello (params)
-      (format nil "Hello, ~A" (getf params :name)))
+```common-lisp
+(setf (ningle:route *app* "/hello/:name")
+      #'(lambda (params)
+          (format nil "Hello, ~A" (getf params :name))))
+```
 
 The above controller will be invoked when you access to "/hello/Eitarow" or "/hello/Tomohiro", and then `(getf params :name)` will be "Eitarow" and "Tomohiro".
 
 Route patterns may also contain "wildcard" parameters. They are accessible by `(getf params :splat)`.
 
-    @url GET "/say/*/to/*"
-    (defun say (params)
-      ; matches /say/hello/to/world
-      (getf params :splat) ;=> ("hello" "world")
-      )
-    
-    @url GET "/download/*.*"
-    (defun download ()
-      ; matches /download/path/to/file.xml
-      (getf params :splat) ;=> ("path/to/file" "xml")
-      )
+```common-lisp
+(setf (ningle:route *app* "/say/*/to/*")
+      #'(lambda (params)
+          ; matches /say/hello/to/world
+          (getf params :splat) ;=> ("hello" "world")
+          ))
+
+(setf (ningle:route *app* "/download/*.*")
+      #'(lambda (params)
+          ; matches /download/path/to/file.xml
+          (getf params :splat) ;=> ("path/to/file" "xml")
+          ))
+```
 
 ### Request & Response
 
@@ -79,26 +87,30 @@ For example, by using them, you can change the response status code, Content-Typ
 
 ningle provides an useful function named `context`. It is an accessor to an internal hash table.
 
-    (setf (context :database)
-          (dbi:connect :mysql
-                       :database-name "test-db"
-                       :username "nobody"
-                       :password "nobody"))
+```common-lisp
+(setf (context :database)
+      (dbi:connect :mysql
+                   :database-name "test-db"
+                   :username "nobody"
+                   :password "nobody"))
 
-    (context :database)
-    ;;=> #<DBD.MYSQL:<DBD-MYSQL-CONNECTION> #x3020013D1C6D>
+(context :database)
+;;=> #<DBD.MYSQL:<DBD-MYSQL-CONNECTION> #x3020013D1C6D>
+```
 
 ### Using Session
 
 ningle doesn't provide Session system in the core, but recommends to use [Clack.Middleware.Session](http://clacklisp.org/doc/clack.middleware.session.html) with [Clack.Builder](http://clacklisp.org/doc/clack.builder.html).
 
-    (import 'clack.builder:builder
-            'clack.middleware.session:<clack-middleware-session>)
-    
-    (clack:clackup
-      (builder
-        <clack-middleware-session>
-        *app*))
+```common-lisp
+(import 'clack.builder:builder
+        'clack.middleware.session:<clack-middleware-session>)
+
+(clack:clackup
+  (builder
+    <clack-middleware-session>
+    *app*))
+```
 
 Of course, you can use other Clack Middlewares with ningle.
 
