@@ -54,12 +54,9 @@
            (multiple-value-bind (_ params)
                (match url-rule method path-info)
              @ignore _
-             (setf (slot-value req 'clack.request::query-parameters)
-                   (append
-                    params
-                    (slot-value req 'clack.request::query-parameters)))
              (if (functionp controller)
-                 (funcall controller (parameter req))
+                 (funcall controller
+                          (append params (parameter req)))
                  controller)))))
       (t (not-found)))))
 
