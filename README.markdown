@@ -4,17 +4,18 @@
 
 ## Usage
 
-### 1. Make an application.
-
     (defvar *app* (make-instance 'ningle:<app>))
-
-### 2. Set a controller.
-
+    
     (setf (ningle:route *app* "/")
           "Welcome to ningle!")
-
-### 3. Run the application.
-
+    
+    (setf (ningle:route *app* "/login" :method :POST)
+          #'(lambda (params)
+              (if (authorize (getf params :|username|)
+                             (getf params :|password|))
+                "Authorized!"
+                "Failed...Try again.")))
+    
     (clack:clackup *app*)
 
 Now you can access to http://localhost:5000/ and then ningle should show you "Welcome to ningle!".
@@ -113,6 +114,6 @@ Of course, you can use other Clack Middlewares with ningle.
 
 Copyright (c) 2012 Eitarow Fukamachi (e.arrows@gmail.com)
 
-# License
+## License
 
 Licensed under the LLGPL License.
