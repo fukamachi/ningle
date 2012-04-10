@@ -22,6 +22,10 @@
 
 Now you can access to http://localhost:5000/ and then ningle should show you "Welcome to ningle!".
 
+## Installation
+
+    (ql:quickload :ningle)
+
 ## Description
 
 ningle is a fork project of [Caveman](http://fukamachi.github.com/caveman/). ningle doesn't require you to generate a project skeleton.
