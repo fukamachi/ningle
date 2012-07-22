@@ -15,7 +15,7 @@
 (in-package :ningle-asd)
 
 (defsystem ningle
-  :version "0.1-SNAPSHOT"
+  :version "0.1"
   :author "Eitarow Fukamachi"
   :license "LLGPL"
   :depends-on (:clack
