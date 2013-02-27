@@ -48,11 +48,11 @@
          (method (request-method req)))
     (acond
       ((and rules
-            (member-rule path-info method rules :allow-head-p t))
+            (member-rule path-info method rules :allow-head t))
        (destructuring-bind ((url-rule controller) &rest other-rules) it
          (let ((*next-route-function* #'(lambda () (dispatch-with-rules other-rules))))
            (multiple-value-bind (_ params)
-               (match url-rule method path-info :allow-head-p t)
+               (match url-rule method path-info :allow-head t)
              @ignore _
              (if (functionp controller)
                  (funcall controller
@@ -93,9 +93,9 @@
   (and (eq (clack.util.route::request-method rule) method)
        (string= (clack.util.route::url rule) url-rule)))
 
-(defun member-rule (path-info method rules &key allow-head-p)
+(defun member-rule (path-info method rules &key allow-head)
   (member-if #'(lambda (rule)
-                 (match rule method path-info :allow-head-p allow-head-p))
+                 (match rule method path-info :allow-head allow-head))
              rules
              :key #'car))
 
