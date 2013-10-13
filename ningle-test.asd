@@ -12,7 +12,11 @@
   :author "Eitarow Fukamachi"
   :license "LLGPL"
   :depends-on (:ningle
-               :cl-test-more)
+               :cl-test-more
+               :clack-test
+               :drakma
+               :yason
+               :babel)
   :components ((:module "t"
                 :components
                 ((:file "ningle"))))
