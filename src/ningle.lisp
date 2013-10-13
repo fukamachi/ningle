@@ -16,7 +16,9 @@
                 :*response*
                 :*session*
                 :context
-                :with-context-variables)
+                :with-context-variables
+                :make-request
+                :make-response)
   (:export :<app>
            :route
            :next-route
@@ -25,7 +27,9 @@
            :*response*
            :*session*
            :context
-           :with-context-variables))
+           :with-context-variables
+           :make-request
+           :make-response))
 (in-package :ningle)
 
 ;; blah blah blah.

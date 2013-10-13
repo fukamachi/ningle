@@ -6,11 +6,7 @@
 (in-package :cl-user)
 (defpackage ningle.context
   (:use :cl
-        :cl-annot.doc)
-  (:import-from :clack.request
-                :make-request)
-  (:import-from :clack.response
-                :make-response))
+        :cl-annot.doc))
 (in-package :ningle.context)
 
 (cl-syntax:use-syntax :annot)
@@ -37,12 +33,20 @@ Don't set to this variable directly. This is designed to be bound in lexical let
 
 @doc "Create a new Context."
 @export
-(defun make-context (req)
+(defun make-context (app env)
   (let ((*context* (make-hash-table)))
-    (setf (context :request) (make-request req)
-          (context :response) (make-response 200 ())
-          (context :session) (getf req :clack.session))
+    (setf (context :request) (make-request app env)
+          (context :response) (make-response app 200 ())
+          (context :session) (getf env :clack.session))
     *context*))
+
+@doc "Make a request object. See ningle.app for the default behavior."
+@export
+(defgeneric make-request (app env))
+
+@doc "Make a response object. See ningle.app for the default behavior."
+@export
+(defgeneric make-response (app &optional status headers body))
 
 @doc "
 Access to current context. If key is specified, return the value in current context.

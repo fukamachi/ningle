@@ -6,6 +6,7 @@
 (in-package :cl-user)
 (defpackage ningle.app
   (:use :cl
+        :cl-annot.doc
         :anaphora
         :clack
         :clack.request
@@ -14,9 +15,11 @@
                 :<url-rule>
                 :match
                 :make-url-rule)
-  (:import-from :ningle.context
-                :*request*
-                :*response*))
+  (:shadowing-import-from :ningle.context
+                          :*request*
+                          :*response*
+                          :make-request
+                          :make-response))
 (in-package :ningle.app)
 
 (cl-syntax:use-syntax :annot)
@@ -27,12 +30,19 @@
 @export
 (defclass <app> (<component>)
      ((routing-rules :initarg routing-rules :initform nil
-                     :accessor routing-rules))
+                     :accessor routing-rules)
+      (%context-mw))
   (:documentation "Base class for Ningle Application. All Ningle Application must inherit this class."))
+
+(defmethod initialize-instance :after ((this <app>) &rest args)
+  (declare (ignore args))
+  (setf (slot-value this '%context-mw)
+        (make-instance '<ningle-middleware-context>
+                       :last-app this)))
 
 (defmethod call :around ((this <app>) env)
   (call (wrap
-         (make-instance '<ningle-middleware-context>)
+         (slot-value this '%context-mw)
          (lambda (env)
            (call-next-method this env)))
         env))
@@ -98,6 +108,15 @@
                  (match rule method path-info :allow-head allow-head))
              rules
              :key #'car))
+
+@doc "Make a request object. A class of the object can be changed by overwriting this."
+(defmethod make-request ((app <app>) env)
+  (clack.request:make-request env))
+
+@doc "Make a response object. A class of the object can be changed by overwriting this."
+(defmethod make-response ((app <app>) &optional status headers body)
+  (declare (ignore app))
+  (clack.response:make-response status headers body))
 
 (doc:start)
 

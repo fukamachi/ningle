@@ -15,7 +15,6 @@
                 :context
                 :make-context)
   (:import-from :clack.response
-                :make-response
                 :body
                 :finalize))
 (in-package :ningle.middleware.context)
@@ -23,15 +22,17 @@
 (cl-syntax:use-syntax :annot)
 
 @export
-(defclass <ningle-middleware-context> (<middleware>) ()
+(defclass <ningle-middleware-context> (<middleware>)
+  ((last-app :initarg :last-app
+             :reader last-app))
   (:documentation "Clack Middleware to set context for each request."))
 
-(defmethod call ((this <ningle-middleware-context>) req)
-  (let* ((*context* (make-context req))
+(defmethod call ((this <ningle-middleware-context>) env)
+  (let* ((*context* (make-context (last-app this) env))
          (*request* (context :request))
          (*response* (context :response))
          (*session* (context :session))
-         (result (call-next this req)))
+         (result (call-next this env)))
     (if (and result (listp result))
         result
         (progn (setf (body *response*) result)
