@@ -11,7 +11,8 @@
   (:import-from :clack.request
                 :<request>)
   (:import-from :clack.response
-                :headers)
+                :headers
+                :body)
   (:import-from :clack.test
                 :test-app
                 :*clack-test-port*)
@@ -23,7 +24,7 @@
                 :parse))
 (in-package :ningle-test)
 
-(plan 12)
+(plan 13)
 
 (setf *app* (make-instance '<app>))
 
@@ -92,5 +93,17 @@
                                     clack.test:*clack-test-port*))
        (string ':ningle-test::ningle-test-request)
        "Can change the class of request.")))
+
+(defmethod not-found ((this ningle-test-app))
+  (setf (clack.response:body *response*) "Page not found")
+  nil)
+
+(clack.test:test-app
+ *app2*
+ (lambda ()
+   (is (drakma:http-request (format nil "http://localhost:~D/404-page-not-found"
+                                    clack.test:*clack-test-port*))
+       "Page not found"
+       "Can change the behavior on 404")))
 
 (finalize)

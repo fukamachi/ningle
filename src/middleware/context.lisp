@@ -33,10 +33,14 @@
          (*response* (context :response))
          (*session* (context :session))
          (result (call-next this env)))
-    (if (and result (listp result))
-        result
-        (progn (setf (body *response*) result)
-               (finalize *response*)))))
+    (cond
+      ((and result (listp result))
+       result)
+      (result
+       (setf (body *response*) result)
+       (finalize *response*))
+      (t
+       (finalize *response*)))))
 
 (doc:start)
 

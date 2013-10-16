@@ -9,7 +9,8 @@
   (:import-from :ningle.app
                 :<app>
                 :route
-                :next-route)
+                :next-route
+                :not-found)
   (:import-from :ningle.context
                 :*context*
                 :*request*
@@ -22,6 +23,7 @@
   (:export :<app>
            :route
            :next-route
+           :not-found
            :*context*
            :*request*
            :*response*
