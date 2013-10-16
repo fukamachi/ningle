@@ -50,25 +50,25 @@
 (defmethod call ((this <app>) env)
   "Overriding method. This method will be called for each request."
   @ignore env
-  (dispatch-with-rules (reverse (routing-rules this))))
+  (or (dispatch-with-rules (reverse (routing-rules this)))
+      (not-found this)))
 
 (defun dispatch-with-rules (rules)
   (let* ((req *request*)
          (path-info (path-info req))
          (method (request-method req)))
-    (acond
-      ((and rules
-            (member-rule path-info method rules :allow-head t))
-       (destructuring-bind ((url-rule controller) &rest other-rules) it
-         (let ((*next-route-function* #'(lambda () (dispatch-with-rules other-rules))))
-           (multiple-value-bind (_ params)
-               (match url-rule method path-info :allow-head t)
-             @ignore _
-             (if (functionp controller)
-                 (funcall controller
-                          (append params (parameter req)))
-                 controller)))))
-      (t (not-found)))))
+    (aif (and rules
+              (member-rule path-info method rules :allow-head t))
+         (destructuring-bind ((url-rule controller) &rest other-rules) it
+           (let ((*next-route-function* #'(lambda () (dispatch-with-rules other-rules))))
+             (multiple-value-bind (_ params)
+                 (match url-rule method path-info :allow-head t)
+               @ignore _
+               (if (functionp controller)
+                   (funcall controller
+                            (append params (parameter req)))
+                   controller))))
+         nil)))
 
 @export
 (defmethod route ((this <app>) url-rule &key (method :get))
@@ -94,8 +94,12 @@
   (funcall *next-route-function*))
 
 @export
-(defun not-found ()
-  "An action when no routing rules are found."
+(defgeneric not-found (app)
+  (:documentation "An action when no routing rules are found."))
+
+@export
+(defmethod not-found ((this <app>))
+  @ignore this
   (setf (clack.response:status *response*) 404)
   nil)
 
