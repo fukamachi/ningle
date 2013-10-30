@@ -26,6 +26,7 @@
 
 (plan 14)
 
+(defvar *app*)
 (setf *app* (make-instance '<app>))
 
 (ok (not (route *app* "/")))
@@ -89,6 +90,7 @@
          :allow-other-keys t
          env))
 
+(defvar *app2*)
 (setf *app2* (make-instance 'ningle-test-app))
 
 (setf (route *app2* "/request-class")
@@ -101,7 +103,9 @@
  (lambda ()
    (is (drakma:http-request (format nil "http://localhost:~D/request-class"
                                     clack.test:*clack-test-port*))
-       (string ':ningle-test::ningle-test-request)
+       (format nil "~A::~A"
+               :ningle-test
+               :ningle-test-request)
        "Can change the class of request.")))
 
 (defmethod not-found ((this ningle-test-app))
