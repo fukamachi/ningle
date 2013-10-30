@@ -108,7 +108,7 @@
   nil)
 
 (defmethod match-url-rule-p ((rule <url-rule>) url-rule method)
-  (and (eq (clack.util.route::request-method rule) method)
+  (and (equal (clack.util.route::request-method rule) method)
        (string= (clack.util.route::url rule) url-rule)))
 
 (defun member-rule (path-info method rules &key allow-head)

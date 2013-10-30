@@ -24,7 +24,7 @@
                 :parse))
 (in-package :ningle-test)
 
-(plan 14)
+(plan 17)
 
 (defvar *app*)
 (setf *app* (make-instance '<app>))
@@ -38,6 +38,20 @@
 
 (ok (route *app* "/"))
 (ok (not (route *app* "/" :method :POST)))
+
+(setf (route *app* "/post" :method :POST)
+      (lambda (params)
+        (declare (ignore params))
+        "posted"))
+
+(ok (not (route *app* "/post")))
+(ok (route *app* "/post" :method :POST))
+
+(setf (route *app* "/new" :method '(:GET :POST))
+      (lambda (params)
+        (declare (ignore params))
+        "new"))
+(ok (route *app* "/new" :method '(:GET :POST)))
 
 (setf (route *app* "/testfile")
       (lambda (params)
