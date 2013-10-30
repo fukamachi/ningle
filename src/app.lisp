@@ -64,10 +64,12 @@
              (multiple-value-bind (_ params)
                  (match url-rule method path-info :allow-head t)
                @ignore _
-               (if (functionp controller)
-                   (funcall controller
-                            (append params (parameter req)))
-                   controller))))
+               (typecase controller
+                 (function (funcall controller
+                                    (append params (parameter req))))
+                 (symbol (funcall (symbol-function controller)
+                                  (append params (parameter req))))
+                 (T controller)))))
          nil)))
 
 @export
@@ -80,8 +82,10 @@
 @export
 (defmethod (setf route) (controller (this <app>) url-rule &key (method :get))
   (setf (routing-rules this)
-        (delete-if #'(lambda (rule) (match-url-rule-p rule url-rule method))
-                   (routing-rules this) :key #'car))
+        (delete-if #'(lambda (rule)
+                       (or (eq (cadr rule) controller)
+                           (match-url-rule-p (car rule) url-rule method)))
+                   (routing-rules this)))
 
   (push (list (make-url-rule url-rule :method method)
               controller)

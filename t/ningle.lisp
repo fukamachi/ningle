@@ -24,7 +24,7 @@
                 :parse))
 (in-package :ningle-test)
 
-(plan 13)
+(plan 14)
 
 (setf *app* (make-instance '<app>))
 
@@ -55,6 +55,12 @@
               "application/json")
         "{\"text\":\"Hello, World!\"}"))
 
+(defun say-hello (params)
+  (format nil "Hello, ~A" (getf params :|name|)))
+
+(setf (route *app* "/hello")
+      'say-hello)
+
 (flet ((localhost (path)
          (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))
   (clack.test:test-app
@@ -70,7 +76,11 @@
                 (is (gethash "text" (yason:parse (babel:octets-to-string body)))
                     "Hello, World!")))
      (is (nth-value 1 (drakma:http-request (localhost "/testfile"))) 200
-         "Can return a pathname."))))
+         "Can return a pathname.")
+
+     (is (drakma:http-request (localhost "/hello?name=Eitarow"))
+         "Hello, Eitarow"
+         "Allow a symbol for a controller."))))
 
 (defclass ningle-test-app (<app>) ())
 (defclass ningle-test-request (<request>) ())
