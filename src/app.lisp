@@ -24,6 +24,10 @@
 
 (cl-syntax:use-syntax :annot)
 
+(defstruct (routing-rule (:constructor make-routing-rule (url-rule controller)))
+  (url-rule nil :type <url-rule>)
+  controller)
+
 (defparameter *next-route-function* nil
   "A function called when `next-route' is invoked. This will be overwritten in `dispatch-with-rules'.")
 
@@ -59,36 +63,42 @@
          (method (request-method req)))
     (aif (and rules
               (member-rule path-info method rules :allow-head t))
-         (destructuring-bind ((url-rule controller) &rest other-rules) it
+         (destructuring-bind (routing-rule &rest other-rules) it
            (let ((*next-route-function* #'(lambda () (dispatch-with-rules other-rules))))
              (multiple-value-bind (_ params)
-                 (match url-rule method path-info :allow-head t)
+                 (match (routing-rule-url-rule routing-rule) method path-info :allow-head t)
                @ignore _
-               (typecase controller
-                 (function (funcall controller
+               (let ((controller (routing-rule-controller routing-rule)))
+                 (typecase controller
+                   (function (funcall controller
+                                      (append params (parameter req))))
+                   (symbol (funcall (symbol-function controller)
                                     (append params (parameter req))))
-                 (symbol (funcall (symbol-function controller)
-                                  (append params (parameter req))))
-                 (T controller)))))
+                   (T controller))))))
          nil)))
 
 @export
-(defmethod route ((this <app>) url-rule &key (method :get))
-  (second
-   (find-if #'(lambda (rule) (match-url-rule-p rule url-rule method))
-            (routing-rules this)
-            :key #'car)))
+(defmethod route ((this <app>) string-url-rule &key (method :get))
+  (let ((matched-rule
+          (find-if #'(lambda (rule)
+                       (match-url-rule-p rule string-url-rule method))
+                   (routing-rules this))))
+    (if matched-rule
+        (routing-rule-controller matched-rule)
+        nil)))
 
 @export
-(defmethod (setf route) (controller (this <app>) url-rule &key (method :get))
+(defmethod (setf route) (controller (this <app>) string-url-rule &key (method :get))
   (setf (routing-rules this)
         (delete-if #'(lambda (rule)
-                       (or (eq (cadr rule) controller)
-                           (match-url-rule-p (car rule) url-rule method)))
+                       (match-url-rule-p rule
+                                         string-url-rule
+                                         method
+                                         controller))
                    (routing-rules this)))
 
-  (push (list (make-url-rule url-rule :method method)
-              controller)
+  (push (make-routing-rule (make-url-rule string-url-rule :method method)
+                           controller)
         (routing-rules this))
 
   controller)
@@ -107,21 +117,24 @@
   (setf (clack.response:status *response*) 404)
   nil)
 
-(defmethod match-url-rule-p ((rule <url-rule>) url-rule method)
-  (and (equal (clack.util.route::request-method rule) method)
-       (string= (clack.util.route::url rule) url-rule)))
+(defmethod match-url-rule-p ((rule routing-rule) string-url-rule method &optional controller)
+  (let ((url-rule (routing-rule-url-rule rule)))
+    (or (and controller
+             (eq (routing-rule-controller rule) controller))
+        (and (equal (clack.util.route::request-method url-rule) method)
+             (string= (clack.util.route::url url-rule) string-url-rule)))))
 
 (defun member-rule (path-info method rules &key allow-head)
   (member-if #'(lambda (rule)
                  (match rule method path-info :allow-head allow-head))
              rules
-             :key #'car))
+             :key #'routing-rule-url-rule))
 
-@doc "Make a request object. A class of the object can be changed by overwriting this."
+@doc "Make a request object. A class of the request object can be changed by overwriting this."
 (defmethod make-request ((app <app>) env)
   (clack.request:make-request env))
 
-@doc "Make a response object. A class of the object can be changed by overwriting this."
+@doc "Make a response object. A class of the response object can be changed by overwriting this."
 (defmethod make-response ((app <app>) &optional status headers body)
   (declare (ignore app))
   (clack.response:make-response status headers body))
