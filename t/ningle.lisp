@@ -24,7 +24,7 @@
                 :parse))
 (in-package :ningle-test)
 
-(plan 17)
+(plan 19)
 
 (defvar *app*)
 (setf *app* (make-instance '<app>))
@@ -75,6 +75,12 @@
 
 (setf (route *app* "/hello")
       'say-hello)
+
+(setf (route *app* "/hello" :identifier 'say-hello)
+      #P"hello.html")
+
+(is (route *app* "/hello") 'say-hello)
+(is (route *app* "/hello" :identifier 'say-hello) #P"hello.html")
 
 (flet ((localhost (path)
          (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))

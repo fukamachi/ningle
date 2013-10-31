@@ -24,9 +24,10 @@
 
 (cl-syntax:use-syntax :annot)
 
-(defstruct (routing-rule (:constructor make-routing-rule (url-rule controller)))
+(defstruct (routing-rule (:constructor make-routing-rule (url-rule controller &optional identifier)))
   (url-rule nil :type <url-rule>)
-  controller)
+  controller
+  identifier)
 
 (defparameter *next-route-function* nil
   "A function called when `next-route' is invoked. This will be overwritten in `dispatch-with-rules'.")
@@ -78,27 +79,30 @@
          nil)))
 
 @export
-(defmethod route ((this <app>) string-url-rule &key (method :get))
+(defmethod route ((this <app>) string-url-rule &key (method :get) identifier)
   (let ((matched-rule
           (find-if #'(lambda (rule)
-                       (match-url-rule-p rule string-url-rule method))
+                       (match-routing-rule-p rule string-url-rule method
+                                         :identifier identifier))
                    (routing-rules this))))
     (if matched-rule
         (routing-rule-controller matched-rule)
         nil)))
 
 @export
-(defmethod (setf route) (controller (this <app>) string-url-rule &key (method :get))
+(defmethod (setf route) (controller (this <app>) string-url-rule &key (method :get) identifier)
   (setf (routing-rules this)
         (delete-if #'(lambda (rule)
-                       (match-url-rule-p rule
+                       (match-routing-rule-p rule
                                          string-url-rule
                                          method
-                                         controller))
+                                         :controller controller
+                                         :identifier identifier))
                    (routing-rules this)))
 
   (push (make-routing-rule (make-url-rule string-url-rule :method method)
-                           controller)
+                           controller
+                           identifier)
         (routing-rules this))
 
   controller)
@@ -117,12 +121,14 @@
   (setf (clack.response:status *response*) 404)
   nil)
 
-(defmethod match-url-rule-p ((rule routing-rule) string-url-rule method &optional controller)
+(defmethod match-routing-rule-p ((rule routing-rule) string-url-rule method &key controller identifier)
   (let ((url-rule (routing-rule-url-rule rule)))
-    (or (and controller
-             (eq (routing-rule-controller rule) controller))
-        (and (equal (clack.util.route::request-method url-rule) method)
-             (string= (clack.util.route::url url-rule) string-url-rule)))))
+    (if (or identifier (routing-rule-identifier rule))
+        (eq identifier (routing-rule-identifier rule))
+        (or (and controller
+                 (eq (routing-rule-controller rule) controller))
+            (and (equal (clack.util.route::request-method url-rule) method)
+                 (string= (clack.util.route::url url-rule) string-url-rule))))))
 
 (defun member-rule (path-info method rules &key allow-head)
   (member-if #'(lambda (rule)
