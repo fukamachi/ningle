@@ -83,7 +83,7 @@
   (let ((matched-rule
           (find-if #'(lambda (rule)
                        (match-routing-rule-p rule string-url-rule method
-                                         :identifier identifier))
+                                             :identifier identifier))
                    (routing-rules this))))
     (if matched-rule
         (routing-rule-controller matched-rule)
@@ -94,10 +94,10 @@
   (setf (routing-rules this)
         (delete-if #'(lambda (rule)
                        (match-routing-rule-p rule
-                                         string-url-rule
-                                         method
-                                         :controller controller
-                                         :identifier identifier))
+                                             string-url-rule
+                                             method
+                                             :controller controller
+                                             :identifier identifier))
                    (routing-rules this)))
 
   (push (make-routing-rule (make-url-rule string-url-rule :method method)
@@ -123,12 +123,9 @@
 
 (defmethod match-routing-rule-p ((rule routing-rule) string-url-rule method &key controller identifier)
   (let ((url-rule (routing-rule-url-rule rule)))
-    (if (or identifier (routing-rule-identifier rule))
-        (eq identifier (routing-rule-identifier rule))
-        (or (and controller
-                 (eq (routing-rule-controller rule) controller))
-            (and (equal (clack.util.route::request-method url-rule) method)
-                 (string= (clack.util.route::url url-rule) string-url-rule))))))
+    (and (eq identifier (routing-rule-identifier rule))
+         (equal (clack.util.route::request-method url-rule) method)
+         (string= (clack.util.route::url url-rule) string-url-rule))))
 
 (defun member-rule (path-info method rules &key allow-head)
   (member-if #'(lambda (rule)
