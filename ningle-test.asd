@@ -19,5 +19,9 @@
                :babel)
   :components ((:module "t"
                 :components
-                ((:file "ningle"))))
-  :perform (load-op :after (op c) (asdf:clear-system c)))
+                ((:test-file "ningle"))))
+
+  :defsystem-depends-on (:cl-test-more)
+  :perform (test-op :after (op c)
+                    (funcall (intern #. (string :run-test-system) :cl-test-more)
+                             c)))
