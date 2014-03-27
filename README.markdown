@@ -81,6 +81,14 @@ Route patterns may also contain "wildcard" parameters. They are accessible by `(
           ))
 ```
 
+Route matching with Regular Expressions:
+
+```common-lisp
+(setf (ningle:route *app* "/hello/([\\w]+)" :regexp t)
+      #'(lambda (params)
+          (format nil "Hello, ~A!" (first (getf params :captures)))))
+```
+
 ### Request & Response
 
 ningle provides two special variables named `*request*` and `*response*`. They will be bound to an instance [Clack.Request](http://clacklisp.org/doc/clack.request.html) and [Clack.Response](http://clacklisp.org/doc/clack.response.html) for each request.

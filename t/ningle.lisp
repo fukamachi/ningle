@@ -24,7 +24,7 @@
                 :parse))
 (in-package :ningle-test)
 
-(plan 19)
+(plan 21)
 
 (defvar *app*)
 (setf *app* (make-instance '<app>))
@@ -82,6 +82,12 @@
 (is (route *app* "/hello") 'say-hello)
 (is (route *app* "/hello" :identifier 'say-hello) #P"hello.html")
 
+(setf (route *app* "/hello_to/(.+)" :regexp t)
+      (lambda (params)
+        (format nil "Saying hello to ~{~A~^ ~}" (getf params :captures))))
+
+(ok (route *app* "/hello_to/(.+)" :regexp t))
+
 (flet ((localhost (path)
          (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))
   (clack.test:test-app
@@ -101,7 +107,11 @@
 
      (is (drakma:http-request (localhost "/hello?name=Eitarow"))
          "Hello, Eitarow"
-         "Allow a symbol for a controller."))))
+         "Allow a symbol for a controller.")
+
+     (is (drakma:http-request (localhost "/hello_to/eitarow/fukamachi"))
+         "Saying hello to eitarow/fukamachi"
+         "Regular expression URL rule."))))
 
 (defclass ningle-test-app (<app>) ())
 (defclass ningle-test-request (<request>) ())

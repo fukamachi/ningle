@@ -13,6 +13,7 @@
         :ningle.middleware.context)
   (:import-from :clack.util.route
                 :<url-rule>
+                :<regex-url-rule>
                 :match
                 :make-url-rule)
   (:shadowing-import-from :ningle.context
@@ -79,18 +80,19 @@
          nil)))
 
 @export
-(defmethod route ((this <app>) string-url-rule &key (method :get) identifier)
+(defmethod route ((this <app>) string-url-rule &key (method :get) identifier regexp)
   (let ((matched-rule
           (find-if #'(lambda (rule)
                        (match-routing-rule-p rule string-url-rule method
-                                             :identifier identifier))
+                                             :identifier identifier
+                                             :regexp regexp))
                    (routing-rules this))))
     (if matched-rule
         (routing-rule-controller matched-rule)
         nil)))
 
 @export
-(defmethod (setf route) (controller (this <app>) string-url-rule &key (method :get) identifier)
+(defmethod (setf route) (controller (this <app>) string-url-rule &key (method :get) identifier regexp)
   (setf (routing-rules this)
         (delete-if #'(lambda (rule)
                        (match-routing-rule-p rule
@@ -100,7 +102,7 @@
                                              :identifier identifier))
                    (routing-rules this)))
 
-  (push (make-routing-rule (make-url-rule string-url-rule :method method)
+  (push (make-routing-rule (make-url-rule string-url-rule :method method :regexp regexp)
                            controller
                            identifier)
         (routing-rules this))
@@ -121,11 +123,13 @@
   (setf (clack.response:status *response*) 404)
   nil)
 
-(defmethod match-routing-rule-p ((rule routing-rule) string-url-rule method &key controller identifier)
+(defmethod match-routing-rule-p ((rule routing-rule) string-url-rule method &key controller identifier regexp)
+  (declare (ignore controller))
   (let ((url-rule (routing-rule-url-rule rule)))
     (and (eq identifier (routing-rule-identifier rule))
          (equal (clack.util.route::request-method url-rule) method)
-         (string= (clack.util.route::url url-rule) string-url-rule))))
+         (string= (clack.util.route::url url-rule) string-url-rule)
+         (eq regexp (typep url-rule '<regex-url-rule>)))))
 
 (defun member-rule (path-info method rules &key allow-head)
   (member-if #'(lambda (rule)
