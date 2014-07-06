@@ -89,6 +89,40 @@ Route matching with Regular Expressions:
           (format nil "Hello, ~A!" (first (getf params :captures)))))
 ```
 
+### Requirements
+
+Routes may include a variety of matching conditions, such as the Content-Type:
+
+```common-lisp
+(setf (ningle:route *app* "/" :content-type "text/html")
+      #'(lambda (params)
+          (declare (ignore params))
+          "<html><body>Hello, World!</body></html>"))
+
+(setf (ningle:route *app* "/" :content-type "text/plain")
+      #'(lambda (params)
+          (declare (ignore params))
+          "Hello, World!"))
+```
+
+You can easily define your own conditions:
+
+```common-lisp
+(setf (ningle:requirement *app* :probability)
+      #'(lambda (value)
+          (lambda () (<= (random 100) value))))
+
+(setf (ningle:route *app* "/win_a_car" :probability 10)
+      #'(lambda (params)
+          (declare (ignore params))
+          "You won!"))
+
+(setf (ningle:route *app* "/win_a_car")
+      #'(lambda (params)
+          (declare (ignore params))
+          "Sorry, you lost."))
+```
+
 ### Request & Response
 
 ningle provides two special variables named `*request*` and `*response*`. They will be bound to an instance [Clack.Request](http://clacklisp.org/doc/clack.request.html) and [Clack.Response](http://clacklisp.org/doc/clack.response.html) for each request.

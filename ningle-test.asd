@@ -19,7 +19,8 @@
                :babel)
   :components ((:module "t"
                 :components
-                ((:test-file "ningle"))))
+                ((:test-file "ningle")
+                 (:test-file "requirements"))))
 
   :defsystem-depends-on (:cl-test-more)
   :perform (test-op :after (op c)
