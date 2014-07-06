@@ -28,8 +28,7 @@
   (let ((hash (make-hash-table :test 'eq)))
     (setf (gethash :content-type hash)
           (lambda (type)
-            (lambda ()
-              (string-equal type (content-type *request*)))))
+            (string-equal type (content-type *request*))))
     hash))
 
 (defstruct (routing-rule (:constructor make-routing-rule (url-rule
@@ -152,7 +151,7 @@
         for requirement = (or (gethash k (app-requirements app))
                               (gethash k *requirement-map*))
         if requirement
-          append (list k (funcall requirement v))
+          append (list k (lambda () (funcall requirement v)))
         else
           do (error "Routing requirement \"~S\" is not found." k)))
 

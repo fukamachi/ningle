@@ -110,7 +110,7 @@ You can easily define your own conditions:
 ```common-lisp
 (setf (ningle:requirement *app* :probability)
       #'(lambda (value)
-          (lambda () (<= (random 100) value))))
+          (<= (random 100) value)))
 
 (setf (ningle:route *app* "/win_a_car" :probability 10)
       #'(lambda (params)

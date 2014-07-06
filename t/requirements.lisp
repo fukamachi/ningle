@@ -60,8 +60,7 @@
 
 (setf (requirement *app* :user-agent)
       (lambda (user-agent-regexp)
-        (lambda ()
-          (ppcre:scan-to-strings user-agent-regexp (clack.request:user-agent *request*)))))
+        (ppcre:scan-to-strings user-agent-regexp (clack.request:user-agent *request*))))
 
 (setf (route *app* "/" :user-agent "Songbird/(\\d+\\.\\d+\\.\\d+)")
       (lambda (params)
