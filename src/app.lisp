@@ -48,14 +48,14 @@
 
 @export
 (defclass <app> (<component>)
-     ((routing-rules :type list
-                     :initarg :routing-rules
-                     :initform '()
-                     :accessor routing-rules)
-      (requirements :type hash-table
-                    :initform (make-hash-table :test 'eq)
-                    :accessor app-requirements)
-      (%context-mw))
+  ((routing-rules :type list
+                  :initarg :routing-rules
+                  :initform '()
+                  :accessor routing-rules)
+   (requirements :type hash-table
+                 :initform (make-hash-table :test 'eq)
+                 :accessor app-requirements)
+   (%context-mw))
   (:documentation "Base class for Ningle Application. All Ningle Application must inherit this class."))
 
 (defmethod initialize-instance :after ((this <app>) &rest args)
@@ -102,7 +102,7 @@
                           (symbol (funcall (symbol-function controller)
                                            (append params (parameter *request*))))
                           (T controller))))))
-                next))))
+              next))))
 
 @export
 (defmethod route ((this <app>) string-url-rule &rest requirements &key (method :get) identifier regexp &allow-other-keys)
