@@ -15,18 +15,18 @@
 (defvar *app*)
 (setf *app* (make-instance '<app>))
 
-(setf (route *app* "/" :content-type "text/html")
+(setf (route *app* "/" :accept '("text/html" "text/xml"))
       (lambda (params)
         (declare (ignore params))
         "<html><body>Hello, World!</body></html>"))
 
-(setf (route *app* "/" :content-type "text/plain")
+(setf (route *app* "/" :accept "text/plain")
       (lambda (params)
         (declare (ignore params))
         "Hello, World!"))
 
 (ok (not (route *app* "/")))
-(ok (route *app* "/" :content-type "text/html"))
+(ok (route *app* "/" :accept "text/plain"))
 
 (flet ((localhost (path)
          (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))
@@ -35,21 +35,18 @@
    (lambda ()
      (multiple-value-bind (body status)
          (drakma:http-request (localhost "/")
-                              :content-type "text/plain"
-                              :content "")
+                              :accept "text/plain")
        (is body "Hello, World!")
        (is status 200))
 
      (multiple-value-bind (body status)
          (drakma:http-request (localhost "/")
-                              :content-type "text/html"
-                              :content "")
+                              :accept "text/html")
        (is body "<html><body>Hello, World!</body></html>")
        (is status 200))
      (is (nth-value 1
                     (drakma:http-request (localhost "/")
-                                         :content-type "application/json"
-                                         :content ""))
+                                         :accept "application/json"))
          404))))
 
 (is-error

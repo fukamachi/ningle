@@ -26,9 +26,14 @@
 
 (defvar *requirement-map*
   (let ((hash (make-hash-table :test 'eq)))
-    (setf (gethash :content-type hash)
-          (lambda (type)
-            (string-equal type (content-type *request*))))
+    (setf (gethash :accept hash)
+          (lambda (types)
+            (let ((accept-header (getf (env *request*) :http-accept)))
+              (some (lambda (type)
+                      (ppcre:scan (format nil "(?i)\\b~A\\b" type) accept-header))
+                    (if (listp types)
+                        types
+                        (list types))))))
     hash))
 
 (defstruct (routing-rule (:constructor make-routing-rule (url-rule

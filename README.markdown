@@ -91,15 +91,15 @@ Route matching with Regular Expressions:
 
 ### Requirements
 
-Routes may include a variety of matching conditions, such as the Content-Type:
+Routes may include a variety of matching conditions, such as the Accept:
 
 ```common-lisp
-(setf (ningle:route *app* "/" :content-type "text/html")
+(setf (ningle:route *app* "/" :accept '("text/html" "text/xml"))
       #'(lambda (params)
           (declare (ignore params))
           "<html><body>Hello, World!</body></html>"))
 
-(setf (ningle:route *app* "/" :content-type "text/plain")
+(setf (ningle:route *app* "/" :accept "text/plain")
       #'(lambda (params)
           (declare (ignore params))
           "Hello, World!"))
