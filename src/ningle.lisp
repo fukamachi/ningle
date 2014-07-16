@@ -11,7 +11,8 @@
                 :route
                 :requirement
                 :next-route
-                :not-found)
+                :not-found
+                :clear-routing-rules)
   (:import-from :ningle.context
                 :*context*
                 :*request*
@@ -26,6 +27,7 @@
            :requirement
            :next-route
            :not-found
+           :clear-routing-rules
            :*context*
            :*request*
            :*response*

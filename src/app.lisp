@@ -183,6 +183,10 @@
   (setf (clack.response:status *response*) 404)
   nil)
 
+@export
+(defun clear-routing-rules (app)
+  (setf (routing-rules app) '()))
+
 (defmethod match-routing-rule-p ((rule routing-rule) string-url-rule method &key controller identifier regexp requirements)
   (declare (ignore controller))
   (let ((url-rule (routing-rule-url-rule rule)))
