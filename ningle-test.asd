@@ -1,6 +1,6 @@
 #|
   This file is a part of ningle project.
-  Copyright (c) 2012 Eitarow Fukamachi (e.arrows@gmail.com)
+  Copyright (c) 2012-2014 Eitaro Fukamachi (e.arrows@gmail.com)
 |#
 
 (in-package :cl-user)
@@ -9,7 +9,7 @@
 (in-package :ningle-test-asd)
 
 (defsystem ningle-test
-  :author "Eitarow Fukamachi"
+  :author "Eitaro Fukamachi"
   :license "LLGPL"
   :depends-on (:ningle
                :cl-test-more

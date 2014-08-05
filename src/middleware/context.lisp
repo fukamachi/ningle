@@ -1,8 +1,3 @@
-#|
-  This file is a part of ningle project.
-  Copyright (c) 2012 Eitarow Fukamachi (e.arrows@gmail.com)
-|#
-
 (in-package :cl-user)
 (defpackage ningle.middleware.context
   (:use :cl
@@ -53,7 +48,7 @@ This is a Clack Middleware to ensure context is set for each request.
 "
 
 @doc:AUTHOR "
-* Eitarow Fukamachi (e.arrows@gmail.com)
+* Eitaro Fukamachi (e.arrows@gmail.com)
 "
 
 @doc:SEE "

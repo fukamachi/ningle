@@ -1,8 +1,3 @@
-#|
-  This file is a part of ningle project.
-  Copyright (c) 2012 Eitarow Fukamachi (e.arrows@gmail.com)
-|#
-
 (in-package :cl-user)
 (defpackage ningle.context
   (:use :cl
@@ -102,5 +97,5 @@ Specifically, context is a hash table in global scope. you can access it with a 
 "
 
 @doc:AUTHOR "
-* Eitarow Fukamachi (e.arrows@gmail.com)
+* Eitaro Fukamachi (e.arrows@gmail.com)
 "

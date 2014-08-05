@@ -1,8 +1,3 @@
-#|
-  This file is a part of ningle project.
-  Copyright (c) 2012 Eitarow Fukamachi (e.arrows@gmail.com)
-|#
-
 (in-package :cl-user)
 (defpackage ningle-test
   (:use :cl
@@ -110,12 +105,12 @@
      (is (nth-value 1 (drakma:http-request (localhost "/testfile"))) 200
          "Can return a pathname.")
 
-     (is (drakma:http-request (localhost "/hello?name=Eitarow"))
-         "Hello, Eitarow"
+     (is (drakma:http-request (localhost "/hello?name=Eitaro"))
+         "Hello, Eitaro"
          "Allow a symbol for a controller.")
 
-     (is (drakma:http-request (localhost "/hello_to/eitarow/fukamachi"))
-         "Saying hello to eitarow/fukamachi"
+     (is (drakma:http-request (localhost "/hello_to/eitaro/fukamachi"))
+         "Saying hello to eitaro/fukamachi"
          "Regular expression URL rule.")
 
      (is (nth-value 1 (drakma:http-request (localhost "/return-nil")))

@@ -63,7 +63,7 @@ Route pattern may contain "keyword" to put the value into the argument.
           (format nil "Hello, ~A" (getf params :name))))
 ```
 
-The above controller will be invoked when you access to "/hello/Eitarow" or "/hello/Tomohiro", and then `(getf params :name)` will be "Eitarow" and "Tomohiro".
+The above controller will be invoked when you access to "/hello/Eitaro" or "/hello/Tomohiro", and then `(getf params :name)` will be "Eitaro" and "Tomohiro".
 
 Route patterns may also contain "wildcard" parameters. They are accessible by `(getf params :splat)`.
 
@@ -166,11 +166,11 @@ Of course, you can use other Clack Middlewares with ningle.
 
 ## Author
 
-* Eitarow Fukamachi (e.arrows@gmail.com)
+* Eitaro Fukamachi (e.arrows@gmail.com)
 
 ## Copyright
 
-Copyright (c) 2012 Eitarow Fukamachi (e.arrows@gmail.com)
+Copyright (c) 2012-2014 Eitaro Fukamachi (e.arrows@gmail.com)
 
 ## License
 

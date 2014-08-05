@@ -1,8 +1,3 @@
-#|
-  This file is a part of ningle project.
-  Copyright (c) 2012 Eitarow Fukamachi (e.arrows@gmail.com)
-|#
-
 (in-package :cl-user)
 (defpackage ningle.app
   (:use :cl
@@ -239,7 +234,7 @@ Ningle.App provides a base class `<app>' for Ningle Applications.
 "
 
 @doc:AUTHOR "
-* Eitarow Fukamachi (e.arrows@gmail.com)
+* Eitaro Fukamachi (e.arrows@gmail.com)
 "
 
 @doc:SEE "
