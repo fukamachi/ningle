@@ -113,46 +113,48 @@
           finally (return :not-found))))
 
 @export
-(defmethod route ((this <app>) string-url-rule &rest requirements &key (method :get) identifier regexp &allow-other-keys)
-  (setf requirements
-        (loop for (k v) on requirements by #'cddr
-              unless (member k '(:method :identifier :regexp) :test #'eq)
-                append (list k v)))
-  (let ((matched-rule
-          (find-if #'(lambda (rule)
-                       (match-routing-rule-p rule string-url-rule method
-                                             :identifier identifier
-                                             :regexp regexp
-                                             :requirements requirements))
-                   (routing-rules this))))
-    (if matched-rule
-        (routing-rule-controller matched-rule)
-        nil)))
+(defgeneric route (app string-url-rule &rest requirements &key method identifier regexp &allow-other-keys)
+  (:method ((this <app>) string-url-rule &rest requirements &key (method :get) identifier regexp &allow-other-keys)
+    (setf requirements
+          (loop for (k v) on requirements by #'cddr
+                unless (member k '(:method :identifier :regexp) :test #'eq)
+                  append (list k v)))
+    (let ((matched-rule
+            (find-if #'(lambda (rule)
+                         (match-routing-rule-p rule string-url-rule method
+                                               :identifier identifier
+                                               :regexp regexp
+                                               :requirements requirements))
+                     (routing-rules this))))
+      (if matched-rule
+          (routing-rule-controller matched-rule)
+          nil))))
 
 @export
-(defmethod (setf route) (controller (this <app>) string-url-rule &rest requirements &key (method :get) identifier regexp &allow-other-keys)
-  (setf requirements
-        (loop for (k v) on requirements by #'cddr
-              unless (member k '(:method :identifier :regexp) :test #'eq)
-                append (list k v)))
-  (setf (routing-rules this)
-        (delete-if #'(lambda (rule)
-                       (match-routing-rule-p rule
-                                             string-url-rule
-                                             method
-                                             :controller controller
-                                             :identifier identifier
-                                             :requirements requirements))
-                   (routing-rules this)))
+(defgeneric (setf route) (controller app string-url-rule &rest requirements &key method identifier regexp &allow-other-keys)
+  (:method (controller (this <app>) string-url-rule &rest requirements &key (method :get) identifier regexp &allow-other-keys)
+    (setf requirements
+          (loop for (k v) on requirements by #'cddr
+                unless (member k '(:method :identifier :regexp) :test #'eq)
+                  append (list k v)))
+    (setf (routing-rules this)
+          (delete-if #'(lambda (rule)
+                         (match-routing-rule-p rule
+                                               string-url-rule
+                                               method
+                                               :controller controller
+                                               :identifier identifier
+                                               :requirements requirements))
+                     (routing-rules this)))
 
-  (push (make-routing-rule (make-url-rule string-url-rule :method method :regexp regexp)
-                           controller
-                           identifier
-                           requirements
-                           (compile-requirements this requirements))
-        (routing-rules this))
+    (push (make-routing-rule (make-url-rule string-url-rule :method method :regexp regexp)
+                             controller
+                             identifier
+                             requirements
+                             (compile-requirements this requirements))
+          (routing-rules this))
 
-  controller)
+    controller))
 
 (defun compile-requirements (app requirements)
   (loop for (k v) on requirements by #'cddr
@@ -190,14 +192,15 @@
 (defun clear-routing-rules (app)
   (setf (routing-rules app) '()))
 
-(defmethod match-routing-rule-p ((rule routing-rule) string-url-rule method &key controller identifier regexp requirements)
-  (declare (ignore controller))
-  (let ((url-rule (routing-rule-url-rule rule)))
-    (and (eq identifier (routing-rule-identifier rule))
-         (equal (clack.util.route::request-method url-rule) method)
-         (string= (clack.util.route::url url-rule) string-url-rule)
-         (eq regexp (typep url-rule '<regex-url-rule>))
-         (equal requirements (routing-rule-requirements rule)))))
+(defgeneric match-routing-rule-p (rule string-url-rule method &key controller identifier regexp requirements)
+  (:method ((rule routing-rule) string-url-rule method &key controller identifier regexp requirements)
+    (declare (ignore controller))
+    (let ((url-rule (routing-rule-url-rule rule)))
+      (and (eq identifier (routing-rule-identifier rule))
+           (equal (clack.util.route::request-method url-rule) method)
+           (string= (clack.util.route::url url-rule) string-url-rule)
+           (eq regexp (typep url-rule '<regex-url-rule>))
+           (equal requirements (routing-rule-requirements rule))))))
 
 @doc "Make a request object. A class of the request object can be changed by overwriting this."
 (defmethod make-request ((app <app>) env)
