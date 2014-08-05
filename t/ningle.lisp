@@ -88,6 +88,11 @@
 
 (ok (route *app* "/hello_to/(.+)" :regexp t))
 
+(setf (route *app* "/return-nil")
+      (lambda (params)
+        (declare (ignore params))
+        nil))
+
 (flet ((localhost (path)
          (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))
   (clack.test:test-app
@@ -111,7 +116,10 @@
 
      (is (drakma:http-request (localhost "/hello_to/eitarow/fukamachi"))
          "Saying hello to eitarow/fukamachi"
-         "Regular expression URL rule."))))
+         "Regular expression URL rule.")
+
+     (is (nth-value 1 (drakma:http-request (localhost "/return-nil")))
+         200))))
 
 (defclass ningle-test-app (<app>) ())
 (defclass ningle-test-request (<request>) ())
