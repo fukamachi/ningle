@@ -24,7 +24,7 @@
                 :parse))
 (in-package :ningle-test)
 
-(plan 21)
+(plan 22)
 
 (defvar *app*)
 (setf *app* (make-instance '<app>))

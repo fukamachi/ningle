@@ -79,8 +79,10 @@
 (defmethod call ((this <app>) env)
   "Overriding method. This method will be called for each request."
   @ignore env
-  (or (dispatch-with-rules (reverse (routing-rules this)))
-      (not-found this)))
+  (let ((res (dispatch-with-rules (reverse (routing-rules this)))))
+    (if (eq res :not-found)
+        (not-found this)
+        res)))
 
 (defun dispatch-with-rules (rules)
   (let ((path-info (path-info *request*))
@@ -107,7 +109,8 @@
                           (symbol (funcall (symbol-function controller)
                                            (append params (parameter *request*))))
                           (T controller))))))
-              next))))
+              next)
+          finally (return :not-found))))
 
 @export
 (defmethod route ((this <app>) string-url-rule &rest requirements &key (method :get) identifier regexp &allow-other-keys)
