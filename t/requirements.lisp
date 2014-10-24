@@ -52,7 +52,7 @@
 (is-error
  (setf (route *app* "/" :user-agent "Songbird/(\\d+\\.\\d+\\.\\d+)")
        (lambda (params)
-         (format nil "Songbird ver ~A" (aref (getf params :user-agent) 0))))
+         (format nil "Songbird ver ~A" (aref (cdr (assoc :user-agent params)) 0))))
  'simple-error)
 
 (setf (requirement *app* :user-agent)
@@ -61,7 +61,7 @@
 
 (setf (route *app* "/" :user-agent "Songbird/(\\d+\\.\\d+\\.\\d+)")
       (lambda (params)
-        (format nil "Songbird ver ~A" (aref (getf params :user-agent) 0))))
+        (format nil "Songbird ver ~A" (aref (cdr (assoc :user-agent params)) 0))))
 
 (flet ((localhost (path)
          (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))

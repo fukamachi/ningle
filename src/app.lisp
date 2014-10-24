@@ -5,21 +5,26 @@
         :clack
         :clack.request
         :ningle.middleware.context)
-  (:import-from :clack.util.route
-                :<url-rule>
-                :<regex-url-rule>
-                :match
-                :make-url-rule)
   (:shadowing-import-from :ningle.context
                           :*request*
                           :*response*
                           :make-request
-                          :make-response))
+                          :make-response)
+  (:import-from :ningle.route
+                :ningle-route
+                :route-controller)
+  (:import-from :myway
+                :make-mapper
+                :add-route
+                :find-route
+                :dispatch)
+  (:import-from :alexandria
+                :delete-from-plist))
 (in-package :ningle.app)
 
 (cl-syntax:use-syntax :annot)
 
-(defvar *requirement-map*
+(defvar *default-requirements-map*
   (let ((hash (make-hash-table :test 'eq)))
     (setf (gethash :accept hash)
           (lambda (types)
@@ -32,29 +37,12 @@
                              (list types)))))))
     hash))
 
-(defstruct (routing-rule (:constructor make-routing-rule (url-rule
-                                                          controller
-                                                          &optional
-                                                            identifier
-                                                            requirements
-                                                            compiled-requirements)))
-  (url-rule nil :type <url-rule>)
-  controller
-  identifier
-  (requirements '() :type list)
-  compiled-requirements)
-
-(defparameter *next-route-function* nil
-  "A function called when `next-route' is invoked. This will be overwritten in `dispatch-with-rules'.")
-
 @export
 (defclass <app> (<component>)
-  ((routing-rules :type list
-                  :initarg :routing-rules
-                  :initform '()
-                  :accessor routing-rules)
+  ((mapper :initform (make-mapper)
+           :accessor mapper)
    (requirements :type hash-table
-                 :initform (make-hash-table :test 'eq)
+                 :initform *default-requirements-map*
                  :accessor app-requirements)
    (%context-mw))
   (:documentation "Base class for Ningle Application. All Ningle Application must inherit this class."))
@@ -75,91 +63,52 @@
 (defmethod call ((this <app>) env)
   "Overriding method. This method will be called for each request."
   @ignore env
-  (let ((res (dispatch-with-rules (reverse (routing-rules this)))))
-    (if (eq res :not-found)
-        (not-found this)
-        res)))
-
-(defun dispatch-with-rules (rules)
-  (let ((path-info (path-info *request*))
-        (method (request-method *request*)))
-    (loop for (rule . rules) on rules
-          do (tagbody
-                (multiple-value-bind (matchp params)
-                    (match (routing-rule-url-rule rule) method path-info :allow-head t)
-                  (when matchp
-                    (let ((req-params
-                            (loop for (name requirement) on (routing-rule-compiled-requirements rule) by #'cddr
-                                  for (ok val) = (multiple-value-list (funcall requirement))
-                                  if ok
-                                    append (list name val)
-                                  else
-                                    do (go next))))
-                      (setf params (nconc params req-params)))
-                    (let ((*next-route-function* #'(lambda () (dispatch-with-rules rules)))
-                          (controller (routing-rule-controller rule)))
-                      (return
-                        (typecase controller
-                          (function (funcall controller
-                                             (append params (parameter *request*))))
-                          (symbol (funcall (symbol-function controller)
-                                           (append params (parameter *request*))))
-                          (T controller))))))
-              next)
-          finally (return :not-found))))
+  (multiple-value-bind (res foundp)
+      (dispatch (mapper this) (path-info *request*)
+                :method (request-method *request*))
+    (if foundp
+        res
+        (not-found this))))
 
 @export
-(defgeneric route (app string-url-rule &rest requirements &key method identifier regexp &allow-other-keys)
-  (:method ((this <app>) string-url-rule &rest requirements &key (method :get) identifier regexp &allow-other-keys)
-    (setf requirements
-          (loop for (k v) on requirements by #'cddr
-                unless (member k '(:method :identifier :regexp) :test #'eq)
-                  append (list k v)))
-    (let ((matched-rule
-            (find-if #'(lambda (rule)
-                         (match-routing-rule-p rule string-url-rule method
-                                               :identifier identifier
-                                               :regexp regexp
-                                               :requirements requirements))
-                     (routing-rules this))))
-      (if matched-rule
-          (routing-rule-controller matched-rule)
+(defgeneric route (app string-url-rule &rest args &key method identifier regexp &allow-other-keys)
+  (:method ((this <app>) string-url-rule &rest args &key (method :get) identifier regexp &allow-other-keys)
+    (let ((route
+            (find-route (mapper this) string-url-rule
+                        :method method
+                        :regexp regexp
+                        :name identifier
+                        :requirements (delete-from-plist args
+                                                         :method :identifier :regexp)
+                        :route-class 'ningle-route)))
+      (if route
+          (route-controller route)
           nil))))
 
 @export
-(defgeneric (setf route) (controller app string-url-rule &rest requirements &key method identifier regexp &allow-other-keys)
-  (:method (controller (this <app>) string-url-rule &rest requirements &key (method :get) identifier regexp &allow-other-keys)
-    (setf requirements
-          (loop for (k v) on requirements by #'cddr
-                unless (member k '(:method :identifier :regexp) :test #'eq)
-                  append (list k v)))
-    (setf (routing-rules this)
-          (delete-if #'(lambda (rule)
-                         (match-routing-rule-p rule
-                                               string-url-rule
-                                               method
-                                               :controller controller
-                                               :identifier identifier
-                                               :requirements requirements))
-                     (routing-rules this)))
-
-    (push (make-routing-rule (make-url-rule string-url-rule :method method :regexp regexp)
-                             controller
-                             identifier
-                             requirements
-                             (compile-requirements this requirements))
-          (routing-rules this))
+(defgeneric (setf route) (controller app string-url-rule &rest args &key method identifier regexp &allow-other-keys)
+  (:method (controller (this <app>) string-url-rule &rest args &key (method :get) identifier regexp &allow-other-keys)
+    (let ((requirements (delete-from-plist args
+                                           :method :identifier :regexp)))
+      (add-route (mapper this)
+                 (make-instance 'ningle-route
+                                :url string-url-rule
+                                :method method
+                                :regexp regexp
+                                :handler (typecase controller
+                                           ((or symbol function)
+                                            (lambda (params)
+                                              (funcall controller
+                                                       (append (parameter *request*)
+                                                               (loop for (k v) on params by #'cddr
+                                                                     collect (cons k v))))))
+                                           (T controller))
+                                :controller controller
+                                :name identifier
+                                :requirements requirements
+                                :requirements-map (app-requirements this))))
 
     controller))
-
-(defun compile-requirements (app requirements)
-  (loop for (k v) on requirements by #'cddr
-        for requirement = (or (gethash k (app-requirements app))
-                              (gethash k *requirement-map*))
-        if requirement
-          append (list k (lambda () (funcall requirement v)))
-        else
-          do (error "Routing requirement \"~S\" is not found." k)))
 
 @export
 (defun requirement (app name)
@@ -167,12 +116,9 @@
   (gethash name (app-requirements app)))
 
 @export
-(defun (setf requirement) (new app name)
-  (setf (gethash name (app-requirements app)) new))
-
-@export
-(defun next-route ()
-  (funcall *next-route-function*))
+(defun (setf requirement) (fn app name)
+  (check-type app <app>)
+  (setf (gethash name (app-requirements app)) fn))
 
 @export
 (defgeneric not-found (app)
@@ -186,17 +132,7 @@
 
 @export
 (defun clear-routing-rules (app)
-  (setf (routing-rules app) '()))
-
-(defgeneric match-routing-rule-p (rule string-url-rule method &key controller identifier regexp requirements)
-  (:method ((rule routing-rule) string-url-rule method &key controller identifier regexp requirements)
-    (declare (ignore controller))
-    (let ((url-rule (routing-rule-url-rule rule)))
-      (and (eq identifier (routing-rule-identifier rule))
-           (equal (clack.util.route::request-method url-rule) method)
-           (string= (clack.util.route::url url-rule) string-url-rule)
-           (eq regexp (typep url-rule '<regex-url-rule>))
-           (equal requirements (routing-rule-requirements rule))))))
+  (setf (mapper app) (make-mapper)))
 
 @doc "Make a request object. A class of the request object can be changed by overwriting this."
 (defmethod make-request ((app <app>) env)
@@ -222,10 +158,10 @@ Ningle.App - Ningle Application Class.
     
     (setf (ningle:route *app* \"/login\" :method :POST)
           #'(lambda (params)
-              (if (authorize (getf params :|username|)
-                             (getf params :|password|))
-                \"Authorized!\"
-                \"Failed...Try again.\")))
+              (if (authorize (cdr (assoc \"username\" params :test #'string=))
+                             (cdr (assoc \"password\" params :test #'string=)))
+                  \"Authorized!\"
+                  \"Failed...Try again.\")))
     
     (call *app*)
 "

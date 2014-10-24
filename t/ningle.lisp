@@ -66,7 +66,7 @@
         "{\"text\":\"Hello, World!\"}"))
 
 (defun say-hello (params)
-  (format nil "Hello, ~A" (getf params :|name|)))
+  (format nil "Hello, ~A" (cdr (assoc "name" params :test #'string=))))
 
 (setf (route *app* "/hello")
       'say-hello)
@@ -79,7 +79,7 @@
 
 (setf (route *app* "/hello_to/(.+)" :regexp t)
       (lambda (params)
-        (format nil "Saying hello to ~{~A~^ ~}" (getf params :captures))))
+        (format nil "Saying hello to ~{~A~^ ~}" (cdr (assoc (string :captures) params :test #'string=)))))
 
 (ok (route *app* "/hello_to/(.+)" :regexp t))
 

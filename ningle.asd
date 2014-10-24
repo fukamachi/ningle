@@ -18,13 +18,15 @@
   :version "0.1"
   :author "Eitaro Fukamachi"
   :license "LLGPL"
-  :depends-on (:clack
+  :depends-on (:myway
+               :clack
                :cl-syntax
                :cl-syntax-annot)
   :components ((:module "src"
                 :components
                 ((:file "ningle" :depends-on ("app"))
-                 (:file "app" :depends-on ("middleware/context" "context"))
+                 (:file "app" :depends-on ("middleware/context" "context" "route"))
+                 (:file "route")
                  (:file "context")
                  (:file "middleware/context" :depends-on ("context")))))
   :description "Super micro framework for Common Lisp."

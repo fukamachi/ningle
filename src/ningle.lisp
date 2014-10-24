@@ -5,7 +5,6 @@
                 :<app>
                 :route
                 :requirement
-                :next-route
                 :not-found
                 :clear-routing-rules)
   (:import-from :ningle.context
@@ -17,10 +16,12 @@
                 :with-context-variables
                 :make-request
                 :make-response)
+  (:import-from :myway
+                :next-route)
   (:export :<app>
            :route
-           :requirement
            :next-route
+           :requirement
            :not-found
            :clear-routing-rules
            :*context*
