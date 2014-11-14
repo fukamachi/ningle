@@ -15,7 +15,7 @@
 (in-package :ningle-asd)
 
 (defsystem ningle
-  :version "0.1"
+  :version "0.2.0"
   :author "Eitaro Fukamachi"
   :license "LLGPL"
   :depends-on (:myway
