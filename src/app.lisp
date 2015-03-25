@@ -142,38 +142,3 @@
 (defmethod make-response ((app <app>) &optional status headers body)
   (declare (ignore app))
   (clack.response:make-response status headers body))
-
-(doc:start)
-
-@doc:NAME "
-Ningle.App - Ningle Application Class.
-"
-
-@doc:SYNOPSIS "
-    (defclass <myapp-app> (<app>) ())
-    (defvar *app* (make-instance '<myapp-app>))
-    
-    (setf (route *app* \"/\")
-          \"Welcome to ningle!\")
-    
-    (setf (ningle:route *app* \"/login\" :method :POST)
-          #'(lambda (params)
-              (if (authorize (cdr (assoc \"username\" params :test #'string=))
-                             (cdr (assoc \"password\" params :test #'string=)))
-                  \"Authorized!\"
-                  \"Failed...Try again.\")))
-    
-    (call *app*)
-"
-
-@doc:DESCRIPTION "
-Ningle.App provides a base class `<app>' for Ningle Applications.
-"
-
-@doc:AUTHOR "
-* Eitaro Fukamachi (e.arrows@gmail.com)
-"
-
-@doc:SEE "
-* Clack.Component
-"
