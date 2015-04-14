@@ -19,7 +19,7 @@
   :author "Eitaro Fukamachi"
   :license "LLGPL"
   :depends-on (:myway
-               :clack
+               :clack-v1-compat
                :cl-syntax
                :cl-syntax-annot)
   :components ((:module "src"
