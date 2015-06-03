@@ -2,15 +2,15 @@
 (defpackage ningle-test.requirements
   (:use :cl
         :ningle
-        :cl-test-more)
+        :prove)
   (:import-from :clack.test
-                :test-app
+                :subtest-app
                 :*clack-test-port*)
   (:import-from :drakma
                 :http-request))
 (in-package :ningle-test.requirements)
 
-(plan 11)
+(plan 4)
 
 (defvar *app*)
 (setf *app* (make-instance '<app>))
@@ -30,34 +30,28 @@
 
 (flet ((localhost (path)
          (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))
-  (clack.test:test-app
-   *app*
-   (lambda ()
-     (multiple-value-bind (body status)
-         (drakma:http-request (localhost "/")
-                              :accept "text/plain")
-       (is body "Hello, World!")
-       (is status 200))
+  (clack.test:subtest-app "Test 1"
+      *app*
+    (multiple-value-bind (body status)
+        (drakma:http-request (localhost "/")
+                             :accept "text/plain")
+      (is body "Hello, World!")
+      (is status 200))
 
-     (multiple-value-bind (body status)
-         (drakma:http-request (localhost "/")
-                              :accept "text/html")
-       (is body "<html><body>Hello, World!</body></html>")
-       (is status 200))
-     (is (nth-value 1
-                    (drakma:http-request (localhost "/")
-                                         :accept "application/json"))
-         404))))
-
-(is-error
- (setf (route *app* "/" :user-agent "Songbird/(\\d+\\.\\d+\\.\\d+)")
-       (lambda (params)
-         (format nil "Songbird ver ~A" (aref (cdr (assoc :user-agent params)) 0))))
- 'simple-error)
+    (multiple-value-bind (body status)
+        (drakma:http-request (localhost "/")
+                             :accept "text/html")
+      (is body "<html><body>Hello, World!</body></html>")
+      (is status 200))
+    (is (nth-value 1
+                   (drakma:http-request (localhost "/")
+                                        :accept "application/json"))
+        404)))
 
 (setf (requirement *app* :user-agent)
       (lambda (user-agent-regexp)
-        (ppcre:scan-to-strings user-agent-regexp (clack.request:user-agent *request*))))
+        (ppcre:scan-to-strings user-agent-regexp
+                               (gethash "user-agent" (lack.request:request-headers *request*)))))
 
 (setf (route *app* "/" :user-agent "Songbird/(\\d+\\.\\d+\\.\\d+)")
       (lambda (params)
@@ -65,16 +59,15 @@
 
 (flet ((localhost (path)
          (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))
-  (clack.test:test-app
-   *app*
-   (lambda ()
-     (is (nth-value 1
-                    (drakma:http-request (localhost "/")))
-         404)
-     (multiple-value-bind (body status)
-         (drakma:http-request (localhost "/")
-                              :user-agent "Songbird/2.2.0")
-       (is status 200)
-       (is body "Songbird ver 2.2.0")))))
+  (clack.test:subtest-app "Test 2"
+      *app*
+    (is (nth-value 1
+                   (drakma:http-request (localhost "/")))
+        404)
+    (multiple-value-bind (body status)
+        (drakma:http-request (localhost "/")
+                             :user-agent "Songbird/2.2.0")
+      (is status 200)
+      (is body "Songbird ver 2.2.0"))))
 
 (finalize)
