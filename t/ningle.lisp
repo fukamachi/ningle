@@ -2,15 +2,14 @@
 (defpackage ningle-test
   (:use :cl
         :ningle
-        :cl-test-more)
-  (:import-from :clack.request
-                :<request>)
-  (:import-from :clack.response
-                :headers
-                :body)
-  (:import-from :clack.test
-                :test-app
-                :*clack-test-port*)
+        :prove)
+  (:import-from :lack.request
+                :request
+                :request-method
+                :request-uri)
+  (:import-from :lack.response
+                :response-headers
+                :response-body)
   (:import-from :babel
                 :octets-to-string)
   (:import-from :drakma
@@ -19,7 +18,7 @@
                 :parse))
 (in-package :ningle-test)
 
-(plan 22)
+(plan 12)
 
 (defvar *app*)
 (setf *app* (make-instance '<app>))
@@ -61,7 +60,7 @@
 (setf (route *app* "/hello2.json")
       (lambda (params)
         (declare (ignore params))
-        (setf (headers *response* :content-type)
+        (setf (getf (response-headers *response*) :content-type)
               "application/json")
         "{\"text\":\"Hello, World!\"}"))
 
@@ -90,38 +89,38 @@
 
 (flet ((localhost (path)
          (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))
-  (clack.test:test-app
-   *app*
-   (lambda ()
-     (is (drakma:http-request (localhost "/")) "Hello, World!")
-     (loop for url in '("/hello.json" "/hello2.json")
-           do (multiple-value-bind (body status headers)
-                  (drakma:http-request (localhost url))
-                (is status 200)
-                (is (cdr (assoc :content-type headers))
-                    "application/json")
-                (is (gethash "text" (yason:parse (babel:octets-to-string body)))
-                    "Hello, World!")))
-     (is (nth-value 1 (drakma:http-request (localhost "/testfile"))) 200
-         "Can return a pathname.")
+  (clack.test:subtest-app "Test"
+      *app*
+    (is (drakma:http-request (localhost "/")) "Hello, World!")
+    (loop for url in '("/hello.json" "/hello2.json")
+          do (multiple-value-bind (body status headers)
+                 (drakma:http-request (localhost url))
+               (is status 200)
+               (is (cdr (assoc :content-type headers))
+                   "application/json")
+               (is (gethash "text" (yason:parse (babel:octets-to-string body)))
+                   "Hello, World!")))
+    (is (nth-value 1 (drakma:http-request (localhost "/testfile"))) 200
+        "Can return a pathname.")
 
-     (is (drakma:http-request (localhost "/hello?name=Eitaro"))
-         "Hello, Eitaro"
-         "Allow a symbol for a controller.")
+    (is (drakma:http-request (localhost "/hello?name=Eitaro"))
+        "Hello, Eitaro"
+        "Allow a symbol for a controller.")
 
-     (is (drakma:http-request (localhost "/hello_to/eitaro/fukamachi"))
-         "Saying hello to eitaro/fukamachi"
-         "Regular expression URL rule.")
+    (is (drakma:http-request (localhost "/hello_to/eitaro/fukamachi"))
+        "Saying hello to eitaro/fukamachi"
+        "Regular expression URL rule.")
 
-     (is (nth-value 1 (drakma:http-request (localhost "/return-nil")))
-         200))))
+    (is (nth-value 1 (drakma:http-request (localhost "/return-nil")))
+        200)))
 
 (defclass ningle-test-app (<app>) ())
-(defclass ningle-test-request (<request>) ())
+(defstruct (ningle-test-request (:include request)))
 (defmethod make-request ((app ningle-test-app) env)
-  (apply #'make-instance 'ningle-test-request
-         :allow-other-keys t
-         env))
+  (let ((req (apply #'make-ningle-test-request :allow-other-keys t env)))
+    (setf (request-method req) (getf env :request-method))
+    (setf (request-uri req) (getf env :request-uri))
+    req))
 
 (defvar *app2*)
 (setf *app2* (make-instance 'ningle-test-app))
@@ -131,26 +130,24 @@
         (declare (ignore params))
         (prin1-to-string (class-name (class-of *request*)))))
 
-(clack.test:test-app
- *app2*
- (lambda ()
-   (is (drakma:http-request (format nil "http://localhost:~D/request-class"
-                                    clack.test:*clack-test-port*))
-       (format nil "~A::~A"
-               :ningle-test
-               :ningle-test-request)
-       "Can change the class of request.")))
+(clack.test:subtest-app "Test 2"
+    *app2*
+  (is (drakma:http-request (format nil "http://localhost:~D/request-class"
+                                   clack.test:*clack-test-port*))
+      (format nil "~A::~A"
+              :ningle-test
+              :ningle-test-request)
+      "Can change the class of request."))
 
 (defmethod not-found ((this ningle-test-app))
-  (setf (clack.response:body *response*) "Page not found")
+  (setf (response-body *response*) "Page not found")
   nil)
 
-(clack.test:test-app
- *app2*
- (lambda ()
-   (is (drakma:http-request (format nil "http://localhost:~D/404-page-not-found"
-                                    clack.test:*clack-test-port*))
-       "Page not found"
-       "Can change the behavior on 404")))
+(clack.test:subtest-app "Test 3"
+    *app2*
+  (is (drakma:http-request (format nil "http://localhost:~D/404-page-not-found"
+                                   clack.test:*clack-test-port*))
+      "Page not found"
+      "Can change the behavior on 404"))
 
 (finalize)

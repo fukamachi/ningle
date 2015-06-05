@@ -12,7 +12,7 @@
   :author "Eitaro Fukamachi"
   :license "LLGPL"
   :depends-on (:ningle
-               :cl-test-more
+               :prove
                :clack-test
                :drakma
                :yason
@@ -22,7 +22,7 @@
                 ((:test-file "ningle")
                  (:test-file "requirements"))))
 
-  :defsystem-depends-on (:cl-test-more)
+  :defsystem-depends-on (:prove)
   :perform (test-op :after (op c)
-                    (funcall (intern #. (string :run-test-system) :cl-test-more)
+                    (funcall (intern #.(string :run-test-system) :prove)
                              c)))

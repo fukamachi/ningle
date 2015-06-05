@@ -15,20 +15,21 @@
 (in-package :ningle-asd)
 
 (defsystem ningle
-  :version "0.2.0"
+  :version "0.3.0"
   :author "Eitaro Fukamachi"
   :license "LLGPL"
   :depends-on (:myway
-               :clack-v1-compat
-               :cl-syntax
-               :cl-syntax-annot)
+               :lack-component
+               :lack-request
+               :lack-response
+               :cl-syntax-annot
+               :alexandria)
   :components ((:module "src"
                 :components
                 ((:file "ningle" :depends-on ("app"))
-                 (:file "app" :depends-on ("middleware/context" "context" "route"))
+                 (:file "app" :depends-on ("context" "route"))
                  (:file "route")
-                 (:file "context")
-                 (:file "middleware/context" :depends-on ("context")))))
+                 (:file "context"))))
   :description "Super micro framework for Common Lisp."
   :long-description
   #.(with-open-file (stream (merge-pathnames

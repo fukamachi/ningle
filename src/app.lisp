@@ -1,15 +1,28 @@
 (in-package :cl-user)
 (defpackage ningle.app
-  (:use :cl
-        :cl-annot.doc
-        :clack
-        :clack.request
-        :ningle.middleware.context)
+  (:use :cl)
   (:shadowing-import-from :ningle.context
+                          :*context*
                           :*request*
                           :*response*
+                          :*session*
+                          :context
+                          :make-context
                           :make-request
                           :make-response)
+  (:import-from :lack.request
+                :request-headers
+                :request-method
+                :request-path-info
+                :request-parameters)
+  (:import-from :lack.response
+                :response-body
+                :response-status
+                :finalize-response)
+  (:import-from :lack.component
+                :lack-component
+                :call
+                :to-app)
   (:import-from :ningle.route
                 :ningle-route
                 :route-controller)
@@ -28,7 +41,7 @@
   (let ((hash (make-hash-table :test 'eq)))
     (setf (gethash :accept hash)
           (lambda (types)
-            (let ((accept-header (gethash "accept" (headers *request*))))
+            (let ((accept-header (gethash "accept" (request-headers *request*))))
               (and accept-header
                    (some (lambda (type)
                            (ppcre:scan (format nil "(?i)\\b~A\\b" type) accept-header))
@@ -38,33 +51,34 @@
     hash))
 
 @export
-(defclass <app> (<component>)
+(defclass <app> (lack-component)
   ((mapper :initform (make-mapper)
            :accessor mapper)
    (requirements :type hash-table
                  :initform *default-requirements-map*
-                 :accessor app-requirements)
-   (%context-mw))
+                 :accessor app-requirements))
   (:documentation "Base class for Ningle Application. All Ningle Application must inherit this class."))
 
-(defmethod initialize-instance :after ((this <app>) &rest args)
-  (declare (ignore args))
-  (setf (slot-value this '%context-mw)
-        (make-instance '<ningle-middleware-context>
-                       :last-app this)))
-
 (defmethod call :around ((this <app>) env)
-  (call (wrap
-         (slot-value this '%context-mw)
-         (lambda (env)
-           (call-next-method this env)))
-        env))
+  (let* ((*context* (make-context this env))
+         (*request* (context :request))
+         (*response* (context :response))
+         (*session* (context :session))
+         (result (call-next-method)))
+    (cond
+      ((and result (listp result))
+       result)
+      (result
+       (setf (response-body *response*) result)
+       (finalize-response *response*))
+      (t
+       (finalize-response *response*)))))
 
 (defmethod call ((this <app>) env)
   "Overriding method. This method will be called for each request."
-  @ignore env
+  (declare (ignore env))
   (multiple-value-bind (res foundp)
-      (dispatch (mapper this) (path-info *request*)
+      (dispatch (mapper this) (request-path-info *request*)
                 :method (request-method *request*))
     (if foundp
         res
@@ -99,7 +113,7 @@
                                            ((or symbol function)
                                             (lambda (params)
                                               (funcall controller
-                                                       (append (parameter *request*)
+                                                       (append (request-parameters *request*)
                                                                (loop for (k v) on params by #'cddr
                                                                      collect (cons k v))))))
                                            (T controller))
@@ -126,19 +140,18 @@
 
 @export
 (defmethod not-found ((this <app>))
-  @ignore this
-  (setf (clack.response:status *response*) 404)
+  (setf (response-status *response*) 404)
   nil)
 
 @export
 (defun clear-routing-rules (app)
   (setf (mapper app) (make-mapper)))
 
-@doc "Make a request object. A class of the request object can be changed by overwriting this."
 (defmethod make-request ((app <app>) env)
-  (clack.request:make-request env))
+  "Make a request object. A class of the request object can be changed by overwriting this."
+  (lack.request:make-request env))
 
-@doc "Make a response object. A class of the response object can be changed by overwriting this."
 (defmethod make-response ((app <app>) &optional status headers body)
+  "Make a response object. A class of the response object can be changed by overwriting this."
   (declare (ignore app))
-  (clack.response:make-response status headers body))
+  (lack.response:make-response status headers body))
