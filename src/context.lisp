@@ -1,7 +1,6 @@
 (in-package :cl-user)
 (defpackage ningle.context
-  (:use :cl
-        :cl-annot.doc))
+  (:use :cl))
 (in-package :ningle.context)
 
 (cl-syntax:use-syntax :annot)
@@ -26,35 +25,33 @@ Don't set to this variable directly. This is designed to be bound in lexical let
   "Special variable to store session.
 Don't set to this variable directly. This is designed to be bound in lexical let.")
 
-@doc "Create a new Context."
 @export
 (defun make-context (app env)
+  "Create a new Context."
   (let ((*context* (make-hash-table)))
     (setf (context :request) (make-request app env)
           (context :response) (make-response app 200 ())
           (context :session) (getf env :clack.session))
     *context*))
 
-@doc "Make a request object. See ningle.app for the default behavior."
 @export
-(defgeneric make-request (app env))
+(defgeneric make-request (app env)
+  (:documentation "Make a request object. See ningle.app for the default behavior."))
 
-@doc "Make a response object. See ningle.app for the default behavior."
 @export
-(defgeneric make-response (app &optional status headers body))
+(defgeneric make-response (app &optional status headers body)
+  (:documentation "Make a response object. See ningle.app for the default behavior."))
 
-@doc "
-Access to current context. If key is specified, return the value in current context.
+@export
+(defun context (&optional key)
+  "Access to current context. If key is specified, return the value in current context.
 If not, just return a current context.
 
 Example:
   (context)
   ;=> #<HASH-TABLE :TEST EQL size 0/60 #x3020025FF5FD>
   (context :request)
-  ;=> #<CAVEMAN.REQUEST:<REQUEST> #x3020024FCCFD>
-"
-@export
-(defun context (&optional key)
+  ;=> #<CAVEMAN.REQUEST:<REQUEST> #x3020024FCCFD>"
   (if key (gethash key *context*) *context*))
 
 @export

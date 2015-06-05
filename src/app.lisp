@@ -1,7 +1,6 @@
 (in-package :cl-user)
 (defpackage ningle.app
-  (:use :cl
-        :cl-annot.doc)
+  (:use :cl)
   (:shadowing-import-from :ningle.context
                           :*context*
                           :*request*
@@ -77,7 +76,7 @@
 
 (defmethod call ((this <app>) env)
   "Overriding method. This method will be called for each request."
-  @ignore env
+  (declare (ignore env))
   (multiple-value-bind (res foundp)
       (dispatch (mapper this) (request-path-info *request*)
                 :method (request-method *request*))
@@ -141,7 +140,6 @@
 
 @export
 (defmethod not-found ((this <app>))
-  @ignore this
   (setf (response-status *response*) 404)
   nil)
 
@@ -149,11 +147,11 @@
 (defun clear-routing-rules (app)
   (setf (mapper app) (make-mapper)))
 
-@doc "Make a request object. A class of the request object can be changed by overwriting this."
 (defmethod make-request ((app <app>) env)
+  "Make a request object. A class of the request object can be changed by overwriting this."
   (lack.request:make-request env))
 
-@doc "Make a response object. A class of the response object can be changed by overwriting this."
 (defmethod make-response ((app <app>) &optional status headers body)
+  "Make a response object. A class of the response object can be changed by overwriting this."
   (declare (ignore app))
   (lack.response:make-response status headers body))

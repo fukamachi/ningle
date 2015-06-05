@@ -22,8 +22,8 @@
                :lack-component
                :lack-request
                :lack-response
-               :cl-syntax
-               :cl-syntax-annot)
+               :cl-syntax-annot
+               :alexandria)
   :components ((:module "src"
                 :components
                 ((:file "ningle" :depends-on ("app"))
