@@ -1,5 +1,7 @@
 # ningle
 
+[![Build Status](https://travis-ci.org/fukamachi/ningle.svg?branch=master)](https://travis-ci.org/fukamachi/ningle)
+
 "ningle" is a lightweight web application framework for Common Lisp.
 
 ## Usage
