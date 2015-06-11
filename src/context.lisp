@@ -31,7 +31,7 @@ Don't set to this variable directly. This is designed to be bound in lexical let
   (let ((*context* (make-hash-table)))
     (setf (context :request) (make-request app env)
           (context :response) (make-response app 200 ())
-          (context :session) (getf env :clack.session))
+          (context :session) (getf env :lack.session))
     *context*))
 
 @export
