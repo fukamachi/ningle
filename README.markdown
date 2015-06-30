@@ -127,7 +127,7 @@ You can easily define your own conditions:
 
 ### Request & Response
 
-ningle provides two special variables named `*request*` and `*response*`. They will be bound to an instance [Clack.Request](http://clacklisp.org/doc/clack.request.html) and [Clack.Response](http://clacklisp.org/doc/clack.response.html) for each request.
+ningle provides two special variables named `*request*` and `*response*`. They will be bound to an instance [Lack.Request](https://github.com/fukamachi/lack/blob/master/src/request.lisp#L33) and [Lack.Response](https://github.com/fukamachi/lack/blob/master/src/response.lisp#L19) for each request.
 
 For example, by using them, you can change the response status code, Content-Type or something like that in each controllers.
 
@@ -148,23 +148,23 @@ ningle provides an useful function named `context`. It is an accessor to an inte
 
 ### Using Session
 
-ningle doesn't provide Session system in the core, but recommends to use [Clack.Middleware.Session](http://clacklisp.org/doc/clack.middleware.session.html) with [Clack.Builder](http://clacklisp.org/doc/clack.builder.html).
+ningle doesn't provide Session system in the core, but recommends to use [Lack.Middleware.Session](https://github.com/fukamachi/lack/blob/master/src/middleware/session.lisp#L20) with [Lack.Builder](https://github.com/fukamachi/lack/blob/master/src/builder.lisp#L62).
 
 ```common-lisp
-(import 'clack.builder:builder
-        'clack.middleware.session:<clack-middleware-session>)
+(import 'lack.builder:builder)
 
 (clack:clackup
   (builder
-    <clack-middleware-session>
+    :session
     *app*))
 ```
 
-Of course, you can use other Clack Middlewares with ningle.
+Of course, you can use other Lack Middlewares with ningle.
 
 ## See Also
 
 * [Clack](http://clacklisp.org/)
+* [Lack](https://github.com/fukamachi/lack)
 
 ## Author
 
