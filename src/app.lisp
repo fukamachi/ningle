@@ -37,7 +37,7 @@
 
 (cl-syntax:use-syntax :annot)
 
-(defvar *default-requirements-map*
+(defun default-requirements-map ()
   (let ((hash (make-hash-table :test 'eq)))
     (setf (gethash :accept hash)
           (lambda (types)
@@ -55,7 +55,7 @@
   ((mapper :initform (make-mapper)
            :accessor mapper)
    (requirements :type hash-table
-                 :initform *default-requirements-map*
+                 :initform (default-requirements-map)
                  :accessor app-requirements))
   (:documentation "Base class for Ningle Application. All Ningle Application must inherit this class."))
 

@@ -10,7 +10,7 @@
                 :http-request))
 (in-package :ningle-test.requirements)
 
-(plan 4)
+(plan 5)
 
 (defvar *app*)
 (setf *app* (make-instance '<app>))
@@ -69,5 +69,8 @@
                              :user-agent "Songbird/2.2.0")
       (is status 200)
       (is body "Songbird ver 2.2.0"))))
+
+(isnt (ningle.app::app-requirements (make-instance '<app>))
+      (ningle.app::app-requirements (make-instance '<app>)))
 
 (finalize)
