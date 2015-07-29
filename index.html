@@ -85,29 +85,29 @@
 
 <div class="highlight highlight-common-lisp"><pre>(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/hello/:name<span class="pl-pds">"</span></span>)
       <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
-          (<span class="pl-c1">format</span> <span class="pl-c1">nil</span> <span class="pl-s"><span class="pl-pds">"</span>Hello, ~A<span class="pl-pds">"</span></span> (assoc <span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span> params :test <span class="pl-c1">#'string=</span>))))</pre></div>
+          (<span class="pl-c1">format</span> <span class="pl-c1">nil</span> <span class="pl-s"><span class="pl-pds">"</span>Hello, ~A<span class="pl-pds">"</span></span> (<span class="pl-c1">cdr</span> (assoc <span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span> params :test <span class="pl-c1">#'string=</span>)))))</pre></div>
 
-<p>The above controller will be invoked when you access to "/hello/Eitaro" or "/hello/Tomohiro", and then <code>(assoc "name" params :test #'string=)</code> will be "Eitaro" and "Tomohiro".</p>
+<p>The above controller will be invoked when you access to "/hello/Eitaro" or "/hello/Tomohiro", and then <code>(cdr (assoc "name" params :test #'string=))</code> will be "Eitaro" and "Tomohiro".</p>
 
 <p>Route patterns may also contain "wildcard" parameters. They are accessible by <code>(assoc :splat params)</code>.</p>
 
 <div class="highlight highlight-common-lisp"><pre>(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/say/*/to/*<span class="pl-pds">"</span></span>)
       <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
           <span class="pl-c">; matches /say/hello/to/world</span>
-          (assoc :splat params) <span class="pl-c">;=&gt; ("hello" "world")</span>
+          (<span class="pl-c1">cdr</span> (assoc :splat params)) <span class="pl-c">;=&gt; ("hello" "world")</span>
           ))
 
 (<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/download/*.*<span class="pl-pds">"</span></span>)
       <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
           <span class="pl-c">; matches /download/path/to/file.xml</span>
-          (assoc :splat params) <span class="pl-c">;=&gt; ("path/to/file" "xml")</span>
+          (<span class="pl-c1">cdr</span> (assoc :splat params)) <span class="pl-c">;=&gt; ("path/to/file" "xml")</span>
           ))</pre></div>
 
 <p>Route matching with Regular Expressions:</p>
 
 <div class="highlight highlight-common-lisp"><pre>(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/hello/([<span class="pl-cce">\\</span>w]+)<span class="pl-pds">"</span></span> :regexp <span class="pl-c1">t</span>)
       <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
-          (<span class="pl-c1">format</span> <span class="pl-c1">nil</span> <span class="pl-s"><span class="pl-pds">"</span>Hello, ~A!<span class="pl-pds">"</span></span> (first (assoc :captures params)))))</pre></div>
+          (<span class="pl-c1">format</span> <span class="pl-c1">nil</span> <span class="pl-s"><span class="pl-pds">"</span>Hello, ~A!<span class="pl-pds">"</span></span> (first (<span class="pl-c1">cdr</span> (assoc :captures params))))))</pre></div>
 
 <h3>
 <a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Requirements</h3>
