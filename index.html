@@ -1,201 +1,214 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en-us">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta charset="UTF-8">
     <title>ningle by fukamachi</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/main.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
   <body>
+    <section class="page-header">
+      <h1 class="project-name">ningle</h1>
+      <h2 class="project-tagline">A lightweight web application framework for Common Lisp</h2>
+      <a href="https://github.com/fukamachi/ningle" class="btn">View on GitHub</a>
+      <a href="https://github.com/fukamachi/ningle/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/fukamachi/ningle/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-      <header>
-        <h1>ningle</h1>
-        <p>A lightweight web application framework for Common Lisp</p>
-      </header>
+    <section class="main-content">
+      <h1>
+<a id="ningle" class="anchor" href="#ningle" aria-hidden="true"><span class="octicon octicon-link"></span></a>ningle</h1>
 
-      <div id="banner">
-        <span id="logo"></span>
+<p><a href="https://travis-ci.org/fukamachi/ningle"><img src="https://travis-ci.org/fukamachi/ningle.svg?branch=master" alt="Build Status"></a></p>
 
-        <a href="https://github.com/fukamachi/ningle" class="button fork"><strong>Fork On GitHub</strong></a>
-        <div class="downloads">
-          <span>Downloads:</span>
-          <ul>
-            <li><a href="https://github.com/fukamachi/ningle/zipball/master" class="button">ZIP</a></li>
-            <li><a href="https://github.com/fukamachi/ningle/tarball/master" class="button">TAR</a></li>
-          </ul>
-        </div>
+<p>"ningle" is a lightweight web application framework for Common Lisp.</p>
 
-      </div><!-- end banner -->
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
 
-    <div class="wrapper">
-      <nav>
-        <ul></ul>
-      </nav>
-      <section>
-        <p>"ningle" is a lightweight web application framework for Common Lisp.</p>
+<div class="highlight highlight-common-lisp"><pre>(defvar <span class="pl-smi">*app*</span> (make-instance 'ningle:&lt;app&gt;))
 
-<h2>Usage</h2>
+(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>)
+      <span class="pl-s"><span class="pl-pds">"</span>Welcome to ningle!<span class="pl-pds">"</span></span>)
 
-<div class="highlight">
-<pre><span class="p">(</span><span class="nb">defvar</span> <span class="vg">*app*</span> <span class="p">(</span><span class="nb">make-instance</span> <span class="ss">'ningle:&lt;app&gt;</span><span class="p">))</span>
+(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/login<span class="pl-pds">"</span></span> :method :POST)
+      <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
+          (<span class="pl-k">if</span> (authorize (<span class="pl-c1">cdr</span> (assoc <span class="pl-s"><span class="pl-pds">"</span>username<span class="pl-pds">"</span></span> params :test <span class="pl-c1">#'string=</span>))
+                         (<span class="pl-c1">cdr</span> (assoc <span class="pl-s"><span class="pl-pds">"</span>password<span class="pl-pds">"</span></span> params :test <span class="pl-c1">#'string=</span>)))
+              <span class="pl-s"><span class="pl-pds">"</span>Authorized!<span class="pl-pds">"</span></span>
+              <span class="pl-s"><span class="pl-pds">"</span>Failed...Try again.<span class="pl-pds">"</span></span>)))
 
-<span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nv">ningle:route</span> <span class="vg">*app*</span> <span class="s">"/"</span><span class="p">)</span>
-      <span class="s">"Welcome to ningle!"</span><span class="p">)</span>
-
-<span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nv">ningle:route</span> <span class="vg">*app*</span> <span class="s">"/login"</span> <span class="ss">:method</span> <span class="ss">:POST</span><span class="p">)</span>
-      <span class="nf">#'</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">params</span><span class="p">)</span>
-          <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nv">authorize</span> <span class="p">(</span><span class="nb">getf</span> <span class="nv">params</span> <span class="ss">:|username|</span><span class="p">)</span>
-                         <span class="p">(</span><span class="nb">getf</span> <span class="nv">params</span> <span class="ss">:|password|</span><span class="p">))</span>
-            <span class="s">"Authorized!"</span>
-            <span class="s">"Failed...Try again."</span><span class="p">)))</span>
-
-<span class="p">(</span><span class="nv">clack:clackup</span> <span class="vg">*app*</span><span class="p">)</span>
-</pre>
-</div>
-
+(clack:clackup <span class="pl-smi">*app*</span>)</pre></div>
 
 <p>Now you can access to http://localhost:5000/ and then ningle should show you "Welcome to ningle!".</p>
 
-<h2>Installation</h2>
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
 
-<div class="highlight">
-<pre><span class="p">(</span><span class="nv">ql:quickload</span> <span class="ss">:ningle</span><span class="p">)</span>
-</pre>
-</div>
+<pre><code>(ql:quickload :ningle)
+</code></pre>
 
-
-<h2>Description</h2>
+<h2>
+<a id="description" class="anchor" href="#description" aria-hidden="true"><span class="octicon octicon-link"></span></a>Description</h2>
 
 <p>ningle is a fork project of <a href="http://fukamachi.github.com/caveman/">Caveman</a>. ningle doesn't require you to generate a project skeleton.</p>
 
 <p>As this is a thin framework, you need to have subtle knowledge about <a href="http://clacklisp.org">Clack</a>. It is a server interface ningle bases on.</p>
 
-<h2>Getting started</h2>
+<h2>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting started</h2>
 
-<h3>Routing</h3>
+<h3>
+<a id="routing" class="anchor" href="#routing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Routing</h3>
 
 <p>ningle has the <a href="http://www.sinatrarb.com/">Sinatra</a>-like routing system.</p>
 
-<div class="highlight">
-<pre><span class="c1">;; GET request (default)</span>
-<span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nv">ningle:route</span> <span class="vg">*app*</span> <span class="s">"/"</span> <span class="ss">:method</span> <span class="ss">:GET</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span>
+<div class="highlight highlight-common-lisp"><pre><span class="pl-c">;; GET request (default)</span>
+(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span> :method :GET) ...)
 
-<span class="c1">;; POST request</span>
-<span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nv">ningle:route</span> <span class="vg">*app*</span> <span class="s">"/"</span> <span class="ss">:method</span> <span class="ss">:POST</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span>
+<span class="pl-c">;; POST request</span>
+(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span> :method :POST) ...)
 
-<span class="c1">;; PUT request</span>
-<span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nv">ningle:route</span> <span class="vg">*app*</span> <span class="s">"/"</span> <span class="ss">:method</span> <span class="ss">:PUT</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span>
+<span class="pl-c">;; PUT request</span>
+(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span> :method :PUT) ...)
 
-<span class="c1">;; DELETE request</span>
-<span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nv">ningle:route</span> <span class="vg">*app*</span> <span class="s">"/"</span> <span class="ss">:method</span> <span class="ss">:DELETE</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span>
+<span class="pl-c">;; DELETE request</span>
+(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span> :method :DELETE) ...)
 
-<span class="c1">;; OPTIONS request</span>
-<span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nv">ningle:route</span> <span class="vg">*app*</span> <span class="s">"/"</span> <span class="ss">:method</span> <span class="ss">:OPTIONS</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span>
-</pre>
-</div>
-
+<span class="pl-c">;; OPTIONS request</span>
+(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span> :method :OPTIONS) ...)</pre></div>
 
 <p>Route pattern may contain "keyword" to put the value into the argument.</p>
 
-<div class="highlight">
-<pre><span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nv">ningle:route</span> <span class="vg">*app*</span> <span class="s">"/hello/:name"</span><span class="p">)</span>
-      <span class="nf">#'</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">params</span><span class="p">)</span>
-          <span class="p">(</span><span class="nb">format</span> <span class="no">nil</span> <span class="s">"Hello, ~A"</span> <span class="p">(</span><span class="nb">getf</span> <span class="nv">params</span> <span class="ss">:name</span><span class="p">))))</span>
-</pre>
-</div>
+<div class="highlight highlight-common-lisp"><pre>(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/hello/:name<span class="pl-pds">"</span></span>)
+      <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
+          (<span class="pl-c1">format</span> <span class="pl-c1">nil</span> <span class="pl-s"><span class="pl-pds">"</span>Hello, ~A<span class="pl-pds">"</span></span> (assoc <span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span> params :test <span class="pl-c1">#'string=</span>))))</pre></div>
 
+<p>The above controller will be invoked when you access to "/hello/Eitaro" or "/hello/Tomohiro", and then <code>(assoc "name" params :test #'string=)</code> will be "Eitaro" and "Tomohiro".</p>
 
-<p>The above controller will be invoked when you access to "/hello/Eitarow" or "/hello/Tomohiro", and then <code>(getf params :name)</code> will be "Eitarow" and "Tomohiro".</p>
+<p>Route patterns may also contain "wildcard" parameters. They are accessible by <code>(assoc :splat params)</code>.</p>
 
-<p>Route patterns may also contain "wildcard" parameters. They are accessible by <code>(getf params :splat)</code>.</p>
+<div class="highlight highlight-common-lisp"><pre>(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/say/*/to/*<span class="pl-pds">"</span></span>)
+      <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
+          <span class="pl-c">; matches /say/hello/to/world</span>
+          (assoc :splat params) <span class="pl-c">;=&gt; ("hello" "world")</span>
+          ))
 
-<div class="highlight">
-<pre><span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nv">ningle:route</span> <span class="vg">*app*</span> <span class="s">"/say/*/to/*"</span><span class="p">)</span>
-      <span class="nf">#'</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">params</span><span class="p">)</span>
-          <span class="c1">; matches /say/hello/to/world</span>
-          <span class="p">(</span><span class="nb">getf</span> <span class="nv">params</span> <span class="ss">:splat</span><span class="p">)</span> <span class="c1">;=&gt; ("hello" "world")</span>
-          <span class="p">))</span>
+(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/download/*.*<span class="pl-pds">"</span></span>)
+      <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
+          <span class="pl-c">; matches /download/path/to/file.xml</span>
+          (assoc :splat params) <span class="pl-c">;=&gt; ("path/to/file" "xml")</span>
+          ))</pre></div>
 
-<span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nv">ningle:route</span> <span class="vg">*app*</span> <span class="s">"/download/*.*"</span><span class="p">)</span>
-      <span class="nf">#'</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">params</span><span class="p">)</span>
-          <span class="c1">; matches /download/path/to/file.xml</span>
-          <span class="p">(</span><span class="nb">getf</span> <span class="nv">params</span> <span class="ss">:splat</span><span class="p">)</span> <span class="c1">;=&gt; ("path/to/file" "xml")</span>
-          <span class="p">))</span>
-</pre>
-</div>
+<p>Route matching with Regular Expressions:</p>
 
+<div class="highlight highlight-common-lisp"><pre>(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/hello/([<span class="pl-cce">\\</span>w]+)<span class="pl-pds">"</span></span> :regexp <span class="pl-c1">t</span>)
+      <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
+          (<span class="pl-c1">format</span> <span class="pl-c1">nil</span> <span class="pl-s"><span class="pl-pds">"</span>Hello, ~A!<span class="pl-pds">"</span></span> (first (assoc :captures params)))))</pre></div>
 
-<h3>Request &amp; Response</h3>
+<h3>
+<a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Requirements</h3>
 
-<p>ningle provides two special variables named <code>*request*</code> and <code>*response*</code>. They will be bound to an instance <a href="http://clacklisp.org/doc/clack.request.html">Clack.Request</a> and <a href="http://clacklisp.org/doc/clack.response.html">Clack.Response</a> for each request.</p>
+<p>Routes may include a variety of matching conditions, such as the Accept:</p>
+
+<div class="highlight highlight-common-lisp"><pre>(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span> :accept '(<span class="pl-s"><span class="pl-pds">"</span>text/html<span class="pl-pds">"</span></span> <span class="pl-s"><span class="pl-pds">"</span>text/xml<span class="pl-pds">"</span></span>))
+      <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
+          (declare (ignore params))
+          <span class="pl-s"><span class="pl-pds">"</span>&lt;html&gt;&lt;body&gt;Hello, World!&lt;/body&gt;&lt;/html&gt;<span class="pl-pds">"</span></span>))
+
+(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span> :accept <span class="pl-s"><span class="pl-pds">"</span>text/plain<span class="pl-pds">"</span></span>)
+      <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
+          (declare (ignore params))
+          <span class="pl-s"><span class="pl-pds">"</span>Hello, World!<span class="pl-pds">"</span></span>))</pre></div>
+
+<p>You can easily define your own conditions:</p>
+
+<div class="highlight highlight-common-lisp"><pre>(<span class="pl-c1">setf</span> (ningle:requirement <span class="pl-smi">*app*</span> :probability)
+      <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (value)
+          (&lt;= (random <span class="pl-c1">100</span>) value)))
+
+(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/win_a_car<span class="pl-pds">"</span></span> :probability <span class="pl-c1">10</span>)
+      <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
+          (declare (ignore params))
+          <span class="pl-s"><span class="pl-pds">"</span>You won!<span class="pl-pds">"</span></span>))
+
+(<span class="pl-c1">setf</span> (ningle:route <span class="pl-smi">*app*</span> <span class="pl-s"><span class="pl-pds">"</span>/win_a_car<span class="pl-pds">"</span></span>)
+      <span class="pl-c1">#'</span>(<span class="pl-c1">lambda</span> (params)
+          (declare (ignore params))
+          <span class="pl-s"><span class="pl-pds">"</span>Sorry, you lost.<span class="pl-pds">"</span></span>))</pre></div>
+
+<h3>
+<a id="request--response" class="anchor" href="#request--response" aria-hidden="true"><span class="octicon octicon-link"></span></a>Request &amp; Response</h3>
+
+<p>ningle provides two special variables named <code>*request*</code> and <code>*response*</code>. They will be bound to an instance <a href="https://github.com/fukamachi/lack/blob/master/src/request.lisp#L33">Lack.Request</a> and <a href="https://github.com/fukamachi/lack/blob/master/src/response.lisp#L19">Lack.Response</a> for each request.</p>
 
 <p>For example, by using them, you can change the response status code, Content-Type or something like that in each controllers.</p>
 
-<h3>Context</h3>
+<h3>
+<a id="context" class="anchor" href="#context" aria-hidden="true"><span class="octicon octicon-link"></span></a>Context</h3>
 
 <p>ningle provides an useful function named <code>context</code>. It is an accessor to an internal hash table.</p>
 
-<div class="highlight">
-<pre><span class="p">(</span><span class="nb">setf</span> <span class="p">(</span><span class="nv">context</span> <span class="ss">:database</span><span class="p">)</span>
-      <span class="p">(</span><span class="nv">dbi:connect</span> <span class="ss">:mysql</span>
-                   <span class="ss">:database-name</span> <span class="s">"test-db"</span>
-                   <span class="ss">:username</span> <span class="s">"nobody"</span>
-                   <span class="ss">:password</span> <span class="s">"nobody"</span><span class="p">))</span>
+<div class="highlight highlight-common-lisp"><pre>(<span class="pl-c1">setf</span> (context :database)
+      (dbi:connect :mysql
+                   :database-name <span class="pl-s"><span class="pl-pds">"</span>test-db<span class="pl-pds">"</span></span>
+                   :username <span class="pl-s"><span class="pl-pds">"</span>nobody<span class="pl-pds">"</span></span>
+                   :password <span class="pl-s"><span class="pl-pds">"</span>nobody<span class="pl-pds">"</span></span>))
 
-<span class="p">(</span><span class="nv">context</span> <span class="ss">:database</span><span class="p">)</span>
-<span class="c1">;;=&gt; #&lt;DBD.MYSQL:&lt;DBD-MYSQL-CONNECTION&gt; #x3020013D1C6D&gt;</span>
-</pre>
-</div>
+(context :database)
+<span class="pl-c">;;=&gt; #&lt;DBD.MYSQL:&lt;DBD-MYSQL-CONNECTION&gt; #x3020013D1C6D&gt;</span></pre></div>
 
+<h3>
+<a id="using-session" class="anchor" href="#using-session" aria-hidden="true"><span class="octicon octicon-link"></span></a>Using Session</h3>
 
-<h3>Using Session</h3>
+<p>ningle doesn't provide Session system in the core, but recommends to use <a href="https://github.com/fukamachi/lack/blob/master/src/middleware/session.lisp#L20">Lack.Middleware.Session</a> with <a href="https://github.com/fukamachi/lack/blob/master/src/builder.lisp#L62">Lack.Builder</a>.</p>
 
-<p>ningle doesn't provide Session system in the core, but recommends to use <a href="http://clacklisp.org/doc/clack.middleware.session.html">Clack.Middleware.Session</a> with <a href="http://clacklisp.org/doc/clack.builder.html">Clack.Builder</a>.</p>
+<div class="highlight highlight-common-lisp"><pre>(import 'lack.builder:builder)
 
-<div class="highlight">
-<pre><span class="p">(</span><span class="nb">import</span> <span class="ss">'clack.builder:builder</span>
-        <span class="ss">'clack.middleware.session:&lt;clack-middleware-session&gt;</span><span class="p">)</span>
+(clack:clackup
+  (builder
+    :session
+    <span class="pl-smi">*app*</span>))</pre></div>
 
-<span class="p">(</span><span class="nv">clack:clackup</span>
-  <span class="p">(</span><span class="nv">builder</span>
-    <span class="nv">&lt;clack-middleware-session&gt;</span>
-    <span class="vg">*app*</span><span class="p">))</span>
-</pre>
-</div>
+<p>Of course, you can use other Lack Middlewares with ningle.</p>
 
-
-<p>Of course, you can use other Clack Middlewares with ningle.</p>
-
-<h2>See Also</h2>
+<h2>
+<a id="see-also" class="anchor" href="#see-also" aria-hidden="true"><span class="octicon octicon-link"></span></a>See Also</h2>
 
 <ul>
 <li><a href="http://clacklisp.org/">Clack</a></li>
-</ul><h2>Author</h2>
+<li><a href="https://github.com/fukamachi/lack">Lack</a></li>
+</ul>
+
+<h2>
+<a id="author" class="anchor" href="#author" aria-hidden="true"><span class="octicon octicon-link"></span></a>Author</h2>
 
 <ul>
-<li>Eitarow Fukamachi (e.arrows@gmail.com)</li>
-</ul><h2>Copyright</h2>
+<li>Eitaro Fukamachi (<a href="mailto:e.arrows@gmail.com">e.arrows@gmail.com</a>)</li>
+</ul>
 
-<p>Copyright (c) 2012 Eitarow Fukamachi (e.arrows@gmail.com)</p>
+<h2>
+<a id="copyright" class="anchor" href="#copyright" aria-hidden="true"><span class="octicon octicon-link"></span></a>Copyright</h2>
 
-<h2>License</h2>
+<p>Copyright (c) 2012-2014 Eitaro Fukamachi (<a href="mailto:e.arrows@gmail.com">e.arrows@gmail.com</a>)</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
 
 <p>Licensed under the LLGPL License.</p>
-      </section>
-      <footer>
-        <p>Project maintained by <a href="https://github.com/fukamachi">fukamachi</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></small></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/fukamachi/ningle">ningle</a> is maintained by <a href="https://github.com/fukamachi">fukamachi</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
-    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
-    
+
+    </section>
+
+  
   </body>
 </html>
+
