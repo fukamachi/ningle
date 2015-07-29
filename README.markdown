@@ -62,10 +62,10 @@ Route pattern may contain "keyword" to put the value into the argument.
 ```common-lisp
 (setf (ningle:route *app* "/hello/:name")
       #'(lambda (params)
-          (format nil "Hello, ~A" (assoc "name" params :test #'string=))))
+          (format nil "Hello, ~A" (cdr (assoc "name" params :test #'string=)))))
 ```
 
-The above controller will be invoked when you access to "/hello/Eitaro" or "/hello/Tomohiro", and then `(assoc "name" params :test #'string=)` will be "Eitaro" and "Tomohiro".
+The above controller will be invoked when you access to "/hello/Eitaro" or "/hello/Tomohiro", and then `(cdr (assoc "name" params :test #'string=))` will be "Eitaro" and "Tomohiro".
 
 Route patterns may also contain "wildcard" parameters. They are accessible by `(assoc :splat params)`.
 
@@ -73,13 +73,13 @@ Route patterns may also contain "wildcard" parameters. They are accessible by `(
 (setf (ningle:route *app* "/say/*/to/*")
       #'(lambda (params)
           ; matches /say/hello/to/world
-          (assoc :splat params) ;=> ("hello" "world")
+          (cdr (assoc :splat params)) ;=> ("hello" "world")
           ))
 
 (setf (ningle:route *app* "/download/*.*")
       #'(lambda (params)
           ; matches /download/path/to/file.xml
-          (assoc :splat params) ;=> ("path/to/file" "xml")
+          (cdr (assoc :splat params)) ;=> ("path/to/file" "xml")
           ))
 ```
 
@@ -88,7 +88,7 @@ Route matching with Regular Expressions:
 ```common-lisp
 (setf (ningle:route *app* "/hello/([\\w]+)" :regexp t)
       #'(lambda (params)
-          (format nil "Hello, ~A!" (first (assoc :captures params)))))
+          (format nil "Hello, ~A!" (first (cdr (assoc :captures params))))))
 ```
 
 ### Requirements
