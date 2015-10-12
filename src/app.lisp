@@ -59,20 +59,33 @@
                  :accessor app-requirements))
   (:documentation "Base class for Ningle Application. All Ningle Application must inherit this class."))
 
+(defmacro with-context ((context) &body body)
+  `(let* ((*context* ,context)
+          (*request* (context :request))
+          (*response* (context :response))
+          (*session* (context :session)))
+     ,@body))
+
 (defmethod call :around ((this <app>) env)
-  (let* ((*context* (make-context this env))
-         (*request* (context :request))
-         (*response* (context :response))
-         (*session* (context :session))
-         (result (call-next-method)))
-    (cond
-      ((and result (listp result))
-       result)
-      (result
-       (setf (response-body *response*) result)
-       (finalize-response *response*))
-      (t
-       (finalize-response *response*)))))
+  (flet ((process-result (result)
+           (cond
+             ((and result (listp result))
+              result)
+             (result
+              (setf (response-body *response*) result)
+              (finalize-response *response*))
+             (t
+              (finalize-response *response*)))))
+    (let* ((context (make-context this env))
+           (result (with-context (context)
+                     (call-next-method))))
+      (if (functionp result)
+          (lambda (responder)
+            (with-context (context)
+              (funcall result (lambda (result)
+                                (funcall responder (process-result result))))))
+          (with-context (context)
+            (process-result result))))))
 
 (defmethod call ((this <app>) env)
   "Overriding method. This method will be called for each request."
