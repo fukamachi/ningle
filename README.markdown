@@ -62,10 +62,10 @@ Route pattern may contain "keyword" to put the value into the argument.
 ```common-lisp
 (setf (ningle:route *app* "/hello/:name")
       #'(lambda (params)
-          (format nil "Hello, ~A" (cdr (assoc "name" params :test #'string=)))))
+          (format nil "Hello, ~A" (cdr (assoc :name params)))))
 ```
 
-The above controller will be invoked when you access to "/hello/Eitaro" or "/hello/Tomohiro", and then `(cdr (assoc "name" params :test #'string=))` will be "Eitaro" and "Tomohiro".
+The above controller will be invoked when you access to "/hello/Eitaro" or "/hello/Tomohiro", and then `(cdr (assoc :name params))` will be "Eitaro" and "Tomohiro".
 
 Route patterns may also contain "wildcard" parameters. They are accessible by `(assoc :splat params)`.
 
