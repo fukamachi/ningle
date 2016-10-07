@@ -23,6 +23,7 @@
                :lack-request
                :lack-response
                :cl-syntax-annot
+               :clack
                :alexandria)
   :components ((:module "src"
                 :components
