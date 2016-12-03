@@ -126,7 +126,12 @@
                                            ((or symbol function)
                                             (lambda (params)
                                               (funcall controller
-                                                       (append (request-parameters *request*)
+                                                       (append (mapc (lambda (pair)
+                                                                       ;; Omit headers & field-metas in multipart/form-data.
+                                                                       (when (consp (cdr pair))
+                                                                         (rplacd pair
+                                                                                 (first (cdr pair)))))
+                                                                     (request-parameters *request*))
                                                                (loop for (k v) on params by #'cddr
                                                                      collect (cons k v))))))
                                            (T controller))
