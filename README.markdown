@@ -131,6 +131,18 @@ ningle provides two special variables named `*request*` and `*response*`. They w
 
 For example, by using them, you can change the response status code, Content-Type or something like that in each controllers.
 
+```common-lisp
+(setf (lack.response:response-headers *response*)
+      (append (lack.response:response-headers *response*)
+              (list :content-type "application/json")))
+
+(setf (lack.response:response-headers *response*)
+      (append (lack.response:response-headers *response*)
+              (list :access-control-allow-origin "*")))
+
+(setf (lack.response:response-status *response*) 201)
+```
+
 ### Context
 
 ningle provides an useful function named `context`. It is an accessor to an internal hash table.
