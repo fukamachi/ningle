@@ -14,7 +14,8 @@
                 :request-headers
                 :request-method
                 :request-path-info
-                :request-parameters)
+                :request-parameters
+                :request-content-type)
   (:import-from :lack.response
                 :response-body
                 :response-status
@@ -126,14 +127,17 @@
                                            ((or symbol function)
                                             (lambda (params)
                                               (funcall controller
-                                                       (append (mapc (lambda (pair)
-                                                                       ;; Omit headers & field-metas in multipart/form-data.
-                                                                       (when (consp (cdr pair))
-                                                                         (rplacd pair
-                                                                                 (first (cdr pair)))))
-                                                                     (request-parameters *request*))
-                                                               (loop for (k v) on params by #'cddr
-                                                                     collect (cons k v))))))
+                                                       ;; Omit headers & field-metas only in multipart/form-data.
+                                                       (cond
+                                                         ((string-equal (request-content-type *request*) "multipart/form-data")
+                                                          (append (mapc (lambda (pair)
+                                                                          (when (consp (cdr pair))
+                                                                            (rplacd pair
+                                                                                    (first (cdr pair)))))
+                                                                        (request-parameters *request*))
+                                                                  (loop for (k v) on params by #'cddr
+                                                                     collect (cons k v))))
+                                                         (t (append (request-parameters *request*)))))))
                                            (T controller))
                                 :controller controller
                                 :name identifier
