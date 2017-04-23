@@ -14,7 +14,8 @@
                 :request-headers
                 :request-method
                 :request-path-info
-                :request-parameters)
+                :request-parameters
+                :request-content-type)
   (:import-from :lack.response
                 :response-body
                 :response-status
@@ -127,9 +128,11 @@
                                             (lambda (params)
                                               (funcall controller
                                                        (append (mapc (lambda (pair)
-                                                                       ;; Omit headers & field-metas in multipart/form-data.
-                                                                       (when (consp (cdr pair))
-                                                                         (rplacd pair
+                                                                                 ;; Omit headers & field-metas only in multipart/form-data.
+                                                                       (and (consp (cdr pair))
+                                                                            (string-equal (request-content-type *request*)
+                                                                                          "multipart/form-data")
+                                                                            (rplacd pair
                                                                                  (first (cdr pair)))))
                                                                      (request-parameters *request*))
                                                                (loop for (k v) on params by #'cddr
