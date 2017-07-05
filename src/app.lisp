@@ -77,7 +77,13 @@
               (finalize-response *response*))
              (t
               (finalize-response *response*)))))
-    (let* ((context (make-context this env))
+    (let* ((context
+             ;; Handle errors mainly while parsing an HTTP request
+             ;;   for preventing from 500 ISE.
+             (handler-case (make-context this env)
+               (error (e)
+                 (warn "~A" e)
+                 (return-from call '(400 () ("Bad Request"))))))
            (result (with-context (context)
                      (call-next-method))))
       (if (functionp result)
