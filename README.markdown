@@ -7,7 +7,7 @@
 ## Usage
 
 ```common-lisp
-(defvar *app* (make-instance 'ningle:<app>))
+(defvar *app* (make-instance 'ningle:app))
 
 (setf (ningle:route *app* "/")
       "Welcome to ningle!")

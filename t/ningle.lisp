@@ -21,7 +21,7 @@
 (plan 12)
 
 (defvar *app*)
-(setf *app* (make-instance '<app>))
+(setf *app* (make-instance 'app))
 
 (ok (not (route *app* "/")))
 
@@ -114,7 +114,7 @@
     (is (nth-value 1 (drakma:http-request (localhost "/return-nil")))
         200)))
 
-(defclass ningle-test-app (<app>) ())
+(defclass ningle-test-app (app) ())
 (defstruct (ningle-test-request (:include request)))
 (defmethod make-request ((app ningle-test-app) env)
   (let ((req (apply #'make-ningle-test-request :allow-other-keys t env)))

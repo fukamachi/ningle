@@ -2,6 +2,7 @@
 (defpackage ningle
   (:use :cl)
   (:import-from :ningle.app
+                :app
                 :<app>
                 :route
                 :requirement
@@ -18,7 +19,8 @@
                 :make-response)
   (:import-from :myway
                 :next-route)
-  (:export :<app>
+  (:export :app
+           :<app>
            :route
            :next-route
            :requirement

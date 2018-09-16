@@ -52,13 +52,15 @@
     hash))
 
 @export
-(defclass <app> (lack-component)
+(defclass app (lack-component)
   ((mapper :initform (make-mapper)
            :accessor mapper)
    (requirements :type hash-table
                  :initform (default-requirements-map)
                  :accessor app-requirements))
   (:documentation "Base class for Ningle Application. All Ningle Application must inherit this class."))
+@export '<app>
+(setf (find-class '<app>) (find-class 'app))
 
 (defmacro with-context ((context) &body body)
   `(let* ((*context* ,context)
@@ -67,7 +69,7 @@
           (*session* (context :session)))
      ,@body))
 
-(defmethod call :around ((this <app>) env)
+(defmethod call :around ((this app) env)
   (flet ((process-result (result)
            (cond
              ((and result (listp result))
@@ -94,7 +96,7 @@
           (with-context (context)
             (process-result result))))))
 
-(defmethod call ((this <app>) env)
+(defmethod call ((this app) env)
   "Overriding method. This method will be called for each request."
   (declare (ignore env))
   (multiple-value-bind (res foundp)
@@ -106,7 +108,7 @@
 
 @export
 (defgeneric route (app string-url-rule &rest args &key method identifier regexp &allow-other-keys)
-  (:method ((this <app>) string-url-rule &rest args &key (method :get) identifier regexp &allow-other-keys)
+  (:method ((this app) string-url-rule &rest args &key (method :get) identifier regexp &allow-other-keys)
     (let ((route
             (find-route (mapper this) string-url-rule
                         :method method
@@ -121,7 +123,7 @@
 
 @export
 (defgeneric (setf route) (controller app string-url-rule &rest args &key method identifier regexp &allow-other-keys)
-  (:method (controller (this <app>) string-url-rule &rest args &key (method :get) identifier regexp &allow-other-keys)
+  (:method (controller (this app) string-url-rule &rest args &key (method :get) identifier regexp &allow-other-keys)
     (let ((requirements (delete-from-plist args
                                            :method :identifier :regexp)))
       (add-route (mapper this)
@@ -153,12 +155,12 @@
 
 @export
 (defun requirement (app name)
-  (check-type app <app>)
+  (check-type app app)
   (gethash name (app-requirements app)))
 
 @export
 (defun (setf requirement) (fn app name)
-  (check-type app <app>)
+  (check-type app app)
   (setf (gethash name (app-requirements app)) fn))
 
 @export
@@ -166,7 +168,7 @@
   (:documentation "An action when no routing rules are found."))
 
 @export
-(defmethod not-found ((this <app>))
+(defmethod not-found ((this app))
   (setf (response-status *response*) 404)
   nil)
 
@@ -174,11 +176,11 @@
 (defun clear-routing-rules (app)
   (setf (mapper app) (make-mapper)))
 
-(defmethod make-request ((app <app>) env)
+(defmethod make-request ((app app) env)
   "Make a request object. A class of the request object can be changed by overwriting this."
   (lack.request:make-request env))
 
-(defmethod make-response ((app <app>) &optional status headers body)
+(defmethod make-response ((app app) &optional status headers body)
   "Make a response object. A class of the response object can be changed by overwriting this."
   (declare (ignore app))
   (lack.response:make-response status headers body))
