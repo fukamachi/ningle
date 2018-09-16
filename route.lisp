@@ -1,13 +1,13 @@
-(in-package :cl-user)
-(defpackage ningle.route
-  (:use :cl)
-  (:import-from :myway
-                :route
-                :equal-route
-                :match-route)
-  (:export :ningle-route
-           :route-controller))
-(in-package :ningle.route)
+(defpackage #:ningle/route
+  (:nicknames #:ningle.route)
+  (:use #:cl)
+  (:import-from #:myway
+                #:route
+                #:equal-route
+                #:match-route)
+  (:export #:ningle-route
+           #:route-controller))
+(in-package #:ningle/route)
 
 (defclass ningle-route (route)
   ((requirements :initarg :requirements

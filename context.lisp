@@ -1,7 +1,7 @@
-(in-package :cl-user)
-(defpackage ningle.context
-  (:use :cl))
-(in-package :ningle.context)
+(defpackage #:ningle/context
+  (:nicknames #:ningle.context)
+  (:use #:cl))
+(in-package #:ningle/context)
 
 (cl-syntax:use-syntax :annot)
 
