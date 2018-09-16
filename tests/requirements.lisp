@@ -1,14 +1,13 @@
-(in-package :cl-user)
-(defpackage ningle-test.requirements
-  (:use :cl
-        :ningle
-        :prove)
-  (:import-from :clack.test
-                :subtest-app
-                :*clack-test-port*)
-  (:import-from :drakma
-                :http-request))
-(in-package :ningle-test.requirements)
+(defpackage #:ningle/tests/requirements
+  (:use #:cl
+        #:ningle
+        #:prove)
+  (:import-from #:clack.test
+                #:subtest-app
+                #:*clack-test-port*)
+  (:import-from #:drakma
+                #:http-request))
+(in-package #:ningle/tests/requirements)
 
 (plan 5)
 

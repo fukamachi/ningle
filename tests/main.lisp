@@ -1,22 +1,21 @@
-(in-package :cl-user)
-(defpackage ningle-test
-  (:use :cl
-        :ningle
-        :prove)
-  (:import-from :lack.request
-                :request
-                :request-method
-                :request-uri)
-  (:import-from :lack.response
-                :response-headers
-                :response-body)
-  (:import-from :babel
-                :octets-to-string)
-  (:import-from :drakma
-                :http-request)
-  (:import-from :yason
-                :parse))
-(in-package :ningle-test)
+(defpackage #:ningle/tests/main
+  (:use #:cl
+        #:ningle
+        #:prove)
+  (:import-from #:lack.request
+                #:request
+                #:request-method
+                #:request-uri)
+  (:import-from #:lack.response
+                #:response-headers
+                #:response-body)
+  (:import-from #:babel
+                #:octets-to-string)
+  (:import-from #:drakma
+                #:http-request)
+  (:import-from #:yason
+                #:parse))
+(in-package #:ningle/tests/main)
 
 (plan 12)
 
@@ -50,7 +49,7 @@
 (setf (route *app* "/testfile")
       (lambda (params)
         (declare (ignore params))
-        (asdf:system-relative-pathname :ningle-test #P"t/test.html")))
+        (asdf:system-relative-pathname :ningle-test #P"tests/test.html")))
 
 (setf (route *app* "/hello.json")
       (lambda (params)
@@ -135,7 +134,7 @@
   (is (drakma:http-request (format nil "http://localhost:~D/request-class"
                                    clack.test:*clack-test-port*))
       (format nil "~A::~A"
-              :ningle-test
+              :ningle/tests/main
               :ningle-test-request)
       "Can change the class of request."))
 
