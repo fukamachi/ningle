@@ -70,31 +70,22 @@
      ,@body))
 
 (defmethod call :around ((this app) env)
-  (flet ((process-result (result)
-           (cond
-             ((and result (listp result))
-              result)
-             (result
-              (setf (response-body *response*) result)
-              (finalize-response *response*))
-             (t
-              (finalize-response *response*)))))
-    (let* ((context
-             ;; Handle errors mainly while parsing an HTTP request
-             ;;   for preventing from 500 ISE.
-             (handler-case (make-context this env)
-               (error (e)
-                 (warn "~A" e)
-                 (return-from call '(400 () ("Bad Request"))))))
-           (result (with-context (context)
-                     (call-next-method))))
-      (if (functionp result)
-          (lambda (responder)
-            (with-context (context)
-              (funcall result (lambda (result)
-                                (funcall responder (process-result result))))))
+  (let* ((context
+           ;; Handle errors mainly while parsing an HTTP request
+           ;;   for preventing from 500 ISE.
+           (handler-case (make-context this env)
+             (error (e)
+               (warn "~A" e)
+               (return-from call '(400 () ("Bad Request"))))))
+         (result (with-context (context)
+                   (call-next-method))))
+    (if (functionp result)
+        (lambda (responder)
           (with-context (context)
-            (process-result result))))))
+            (funcall result (lambda (result)
+                              (funcall responder (process-response this result))))))
+        (with-context (context)
+          (process-response this result)))))
 
 (defmethod call ((this app) env)
   "Overriding method. This method will be called for each request."
@@ -184,3 +175,14 @@
   "Make a response object. A class of the response object can be changed by overwriting this."
   (declare (ignore app))
   (lack.response:make-response status headers body))
+
+@export
+(defmethod process-response ((app app) result)
+  (cond
+    ((and result (listp result))
+     result)
+    (result
+     (setf (response-body *response*) result)
+     (finalize-response *response*))
+    (t
+     (finalize-response *response*))))
