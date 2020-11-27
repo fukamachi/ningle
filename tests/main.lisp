@@ -88,7 +88,7 @@
 
 (flet ((localhost (path)
          (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))
-  (clack.test:subtest-app "Test"
+  (clack.test:testing-app "Test"
       *app*
     (is (drakma:http-request (localhost "/")) "Hello, World!")
     (loop for url in '("/hello.json" "/hello2.json")
@@ -129,7 +129,7 @@
         (declare (ignore params))
         (prin1-to-string (class-name (class-of *request*)))))
 
-(clack.test:subtest-app "Test 2"
+(clack.test:testing-app "Test 2"
     *app2*
   (is (drakma:http-request (format nil "http://localhost:~D/request-class"
                                    clack.test:*clack-test-port*))
@@ -142,7 +142,7 @@
   (setf (response-body *response*) "Page not found")
   nil)
 
-(clack.test:subtest-app "Test 3"
+(clack.test:testing-app "Test 3"
     *app2*
   (is (drakma:http-request (format nil "http://localhost:~D/404-page-not-found"
                                    clack.test:*clack-test-port*))
