@@ -145,7 +145,7 @@ For example, by using them, you can change the response status code, Content-Typ
 
 ### Context
 
-ningle provides an useful function named `context`. It is an accessor to an internal hash table.
+ningle provides a useful function named `context`. It is an accessor to an internal hash table.
 
 ```common-lisp
 (setf (context :database)
