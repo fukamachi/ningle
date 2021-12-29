@@ -3,7 +3,7 @@
         #:ningle
         #:prove)
   (:import-from #:clack.test
-                #:subtest-app
+                #:testing-app
                 #:*clack-test-port*)
   (:import-from #:drakma
                 #:http-request))
@@ -29,7 +29,7 @@
 
 (flet ((localhost (path)
          (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))
-  (clack.test:subtest-app "Test 1"
+  (clack.test:testing-app "Test 1"
       *app*
     (multiple-value-bind (body status)
         (drakma:http-request (localhost "/")
@@ -58,7 +58,7 @@
 
 (flet ((localhost (path)
          (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))
-  (clack.test:subtest-app "Test 2"
+  (clack.test:testing-app "Test 2"
       *app*
     (is (nth-value 1
                    (drakma:http-request (localhost "/")))
