@@ -3,7 +3,7 @@
   (:use #:cl))
 (in-package #:ningle/context)
 
-(cl-syntax:use-syntax :annot)
+(annot:enable-annot-syntax)
 
 @export
 (defvar *context* nil

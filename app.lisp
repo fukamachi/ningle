@@ -36,7 +36,7 @@
                 #:delete-from-plist))
 (in-package #:ningle/app)
 
-(cl-syntax:use-syntax :annot)
+(annot:enable-annot-syntax)
 
 (defun default-requirements-map ()
   (let ((hash (make-hash-table :test 'eq)))
