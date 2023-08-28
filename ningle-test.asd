@@ -4,8 +4,8 @@
   :defsystem-depends-on ("prove")
   :depends-on ("ningle"
                "prove"
-               "clack-test"
-               "drakma"
+               "lack-test"
+               "lack-component"
                "yason"
                "babel")
   :components ((:module "tests"

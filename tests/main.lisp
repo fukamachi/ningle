@@ -2,17 +2,19 @@
   (:use #:cl
         #:ningle
         #:prove)
+  (:import-from #:lack.component
+                #:to-app)
   (:import-from #:lack.request
-                #:request
                 #:request-method
                 #:request-uri)
   (:import-from #:lack.response
                 #:response-headers
                 #:response-body)
+  (:import-from #:lack.test
+                #:request
+                #:testing-app)
   (:import-from #:babel
                 #:octets-to-string)
-  (:import-from #:drakma
-                #:http-request)
   (:import-from #:yason
                 #:parse))
 (in-package #:ningle/tests/main)
@@ -86,35 +88,31 @@
         (declare (ignore params))
         nil))
 
-(flet ((localhost (path)
-         (format nil "http://localhost:~D~A" clack.test:*clack-test-port* path)))
-  (clack.test:subtest-app "Test"
-      *app*
-    (is (drakma:http-request (localhost "/")) "Hello, World!")
-    (loop for url in '("/hello.json" "/hello2.json")
-          do (multiple-value-bind (body status headers)
-                 (drakma:http-request (localhost url))
-               (is status 200)
-               (is (cdr (assoc :content-type headers))
-                   "application/json")
-               (is (gethash "text" (yason:parse (babel:octets-to-string body)))
-                   "Hello, World!")))
-    (is (nth-value 1 (drakma:http-request (localhost "/testfile"))) 200
-        "Can return a pathname.")
+(testing-app (to-app *app*)
+  (is (request "/") "Hello, World!")
+  (loop for url in '("/hello.json" "/hello2.json")
+        do (multiple-value-bind (body status headers)
+               (request url)
+             (is status 200)
+             (is (gethash "content-type" headers) "application/json")
+             (is (gethash "text" (yason:parse body))
+                 "Hello, World!")))
+  (is (nth-value 1 (request "/testfile")) 200
+      "Can return a pathname.")
 
-    (is (drakma:http-request (localhost "/hello?name=Eitaro"))
-        "Hello, Eitaro"
-        "Allow a symbol for a controller.")
+  (is (request "/hello?name=Eitaro")
+      "Hello, Eitaro"
+      "Allow a symbol for a controller.")
 
-    (is (drakma:http-request (localhost "/hello_to/eitaro/fukamachi"))
-        "Saying hello to eitaro/fukamachi"
-        "Regular expression URL rule.")
+  (is (request "/hello_to/eitaro/fukamachi")
+      "Saying hello to eitaro/fukamachi"
+      "Regular expression URL rule.")
 
-    (is (nth-value 1 (drakma:http-request (localhost "/return-nil")))
-        200)))
+  (is (nth-value 1 (request "/return-nil"))
+      200))
 
 (defclass ningle-test-app (app) ())
-(defstruct (ningle-test-request (:include request)))
+(defstruct (ningle-test-request (:include lack.request:request)))
 (defmethod make-request ((app ningle-test-app) env)
   (let ((req (apply #'make-ningle-test-request :allow-other-keys t env)))
     (setf (request-method req) (getf env :request-method))
@@ -127,12 +125,11 @@
 (setf (route *app2* "/request-class")
       (lambda (params)
         (declare (ignore params))
-        (prin1-to-string (class-name (class-of *request*)))))
+        (let ((*package* (find-package :cl-user)))
+          (prin1-to-string (class-name (class-of ningle:*request*))))))
 
-(clack.test:subtest-app "Test 2"
-    *app2*
-  (is (drakma:http-request (format nil "http://localhost:~D/request-class"
-                                   clack.test:*clack-test-port*))
+(testing-app (to-app *app2*)
+  (is (request "/request-class")
       (format nil "~A::~A"
               :ningle/tests/main
               :ningle-test-request)
@@ -142,10 +139,8 @@
   (setf (response-body *response*) "Page not found")
   nil)
 
-(clack.test:subtest-app "Test 3"
-    *app2*
-  (is (drakma:http-request (format nil "http://localhost:~D/404-page-not-found"
-                                   clack.test:*clack-test-port*))
+(testing-app (to-app *app2*)
+  (is (request "/404-page-not-found")
       "Page not found"
       "Can change the behavior on 404"))
 

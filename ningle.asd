@@ -3,8 +3,7 @@
   :version "0.3.0"
   :author "Eitaro Fukamachi"
   :license "LLGPL"
-  :depends-on ("cl-syntax-annot"
-               "ningle/main")
+  :depends-on ("ningle/main")
   :description "Super micro framework for Common Lisp."
   :in-order-to ((test-op (test-op "ningle-test"))))
 
