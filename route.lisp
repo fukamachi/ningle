@@ -39,16 +39,22 @@
                 (append requirement-params params))))))
 
 (defun compile-requirements (map requirements)
-  (let* ((params '())
-         (compiled (loop for (name val) on requirements by #'cddr
-                         for fn = (gethash name map)
-                         if fn
-                           collect (lambda ()
-                                     (multiple-value-bind (satisfied res)
-                                         (funcall fn val)
-                                       (when satisfied
-                                         (setf params (append (list name res) params)))))
-                         else
-                           do (error "Requirement ~S is not defined." name))))
+  (let ((compiled (loop for (name val) on requirements by #'cddr
+                        for fn = (gethash name map)
+                        if fn
+                        collect (lambda ()
+                                  (multiple-value-bind (satisfied res)
+                                      (funcall fn val)
+                                    (and satisfied
+                                         (list name res))))
+                        else
+                        do (error "Requirement ~S is not defined." name))))
     (lambda ()
-      (values (every #'funcall compiled) params))))
+      (loop for fn in compiled
+            for result = (funcall fn)
+            if result
+            append result into params
+            else
+            do (return nil)
+            finally
+               (return (values t params))))))
