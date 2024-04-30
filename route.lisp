@@ -18,7 +18,7 @@
    (controller :initarg :controller
                :accessor route-controller)))
 
-(defmethod initialize-instance :after ((route ningle-route) &rest initargs &key requirements-map requirements &allow-other-keys)
+(defmethod initialize-instance :after ((route ningle-route) &key requirements-map requirements &allow-other-keys)
   (when requirements-map
     (setf (route-compiled-requirements route)
           (compile-requirements requirements-map requirements))))
